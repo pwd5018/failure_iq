@@ -1,0 +1,78 @@
+﻿{
+    "runName":  "Cross Browser Run - Chrome",
+    "triggeredBy":  "Local QA Machine",
+    "testCaseResults":  [
+                            {
+                                "testName":  "LoginTest.shouldShowErrorForInvalidPassword",
+                                "status":  "FAILED",
+                                "errorMessage":  "org.openqa.selenium.StaleElementReferenceException: stale element reference: element is not attached to the page document",
+                                "durationSeconds":  1.22
+                            },
+                            {
+                                "testName":  "ReportsTest.shouldExportCsv",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.07
+                            },
+                            {
+                                "testName":  "ProfileTest.shouldUpdateUserDetails",
+                                "status":  "FAILED",
+                                "errorMessage":  "org.openqa.selenium.TimeoutException: Expected condition failed: waiting for visibility of element located by By.cssSelector: .loading-spinner",
+                                "durationSeconds":  5.43
+                            },
+                            {
+                                "testName":  "SettingsTest.shouldSaveNotificationPreferences",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  1.45
+                            },
+                            {
+                                "testName":  "DashboardTest.shouldRenderSummaryCards",
+                                "status":  "FAILED",
+                                "errorMessage":  "org.openqa.selenium.NoSuchElementException: Unable to locate element: {\"method\":\"css selector\",\"selector\":\"[data-testid=\u0027submit-order-button\u0027]\"}",
+                                "durationSeconds":  3.83
+                            },
+                            {
+                                "testName":  "UsersTest.shouldDeleteInactiveUser",
+                                "status":  "SKIPPED",
+                                "errorMessage":  "org.testng.SkipException: Test skipped because a dependent setup step failed",
+                                "durationSeconds":  0.79
+                            },
+                            {
+                                "testName":  "UsersTest.shouldSearchByEmail",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  3.06
+                            },
+                            {
+                                "testName":  "CheckoutTest.shouldCompleteOrder",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  2.83
+                            },
+                            {
+                                "testName":  "OrdersTest.shouldFilterOrdersByStatus",
+                                "status":  "FAILED",
+                                "errorMessage":  "org.openqa.selenium.ElementClickInterceptedException: element click intercepted by overlapping modal backdrop",
+                                "durationSeconds":  3.95
+                            },
+                            {
+                                "testName":  "CheckoutTest.shouldAddItemToCart",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  5.05
+                            },
+                            {
+                                "testName":  "LoginTest.shouldLoginWithValidCredentials",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  1.3
+                            },
+                            {
+                                "testName":  "NavigationTest.shouldOpenOrdersPage",
+                                "status":  "FAILED",
+                                "errorMessage":  "java.lang.AssertionError: expected [Order placed successfully] but found [Order failed]",
+                                "durationSeconds":  3.46
+                            }
+                        ]
+}

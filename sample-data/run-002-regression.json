@@ -1,0 +1,78 @@
+﻿{
+    "runName":  "Regression Run - Build 248",
+    "triggeredBy":  "Jenkins",
+    "testCaseResults":  [
+                            {
+                                "testName":  "ProfileTest.shouldUpdateUserDetails",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  3.85
+                            },
+                            {
+                                "testName":  "LoginTest.shouldLoginWithValidCredentials",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  3.65
+                            },
+                            {
+                                "testName":  "CheckoutTest.shouldAddItemToCart",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.13
+                            },
+                            {
+                                "testName":  "CheckoutTest.shouldCompleteOrder",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.72
+                            },
+                            {
+                                "testName":  "LoginTest.shouldShowErrorForInvalidPassword",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  2.76
+                            },
+                            {
+                                "testName":  "NavigationTest.shouldOpenOrdersPage",
+                                "status":  "FAILED",
+                                "errorMessage":  "java.lang.AssertionError: expected [Order placed successfully] but found [Order failed]",
+                                "durationSeconds":  5.15
+                            },
+                            {
+                                "testName":  "UsersTest.shouldDeleteInactiveUser",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.14
+                            },
+                            {
+                                "testName":  "DashboardTest.shouldRenderSummaryCards",
+                                "status":  "FAILED",
+                                "errorMessage":  "org.openqa.selenium.NoSuchElementException: Unable to locate element: {\"method\":\"css selector\",\"selector\":\"[data-testid=\u0027submit-order-button\u0027]\"}",
+                                "durationSeconds":  2.9
+                            },
+                            {
+                                "testName":  "UsersTest.shouldSearchByEmail",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  1.84
+                            },
+                            {
+                                "testName":  "SettingsTest.shouldSaveNotificationPreferences",
+                                "status":  "FAILED",
+                                "errorMessage":  "org.openqa.selenium.TimeoutException: Expected condition failed: waiting for visibility of element located by By.cssSelector: .loading-spinner",
+                                "durationSeconds":  5.78
+                            },
+                            {
+                                "testName":  "OrdersTest.shouldFilterOrdersByStatus",
+                                "status":  "SKIPPED",
+                                "errorMessage":  "org.testng.SkipException: Test skipped because a dependent setup step failed",
+                                "durationSeconds":  0.78
+                            },
+                            {
+                                "testName":  "ReportsTest.shouldExportCsv",
+                                "status":  "FAILED",
+                                "errorMessage":  "org.openqa.selenium.StaleElementReferenceException: stale element reference: element is not attached to the page document",
+                                "durationSeconds":  5.98
+                            }
+                        ]
+}

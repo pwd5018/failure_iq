@@ -1,0 +1,78 @@
+﻿{
+    "runName":  "Hotfix Validation - Checkout",
+    "triggeredBy":  "Azure DevOps",
+    "testCaseResults":  [
+                            {
+                                "testName":  "NavigationTest.shouldOpenOrdersPage",
+                                "status":  "FAILED",
+                                "errorMessage":  "java.lang.AssertionError: expected [Order placed successfully] but found [Order failed]",
+                                "durationSeconds":  5.21
+                            },
+                            {
+                                "testName":  "LoginTest.shouldShowErrorForInvalidPassword",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  2.81
+                            },
+                            {
+                                "testName":  "ProfileTest.shouldUpdateUserDetails",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  2.11
+                            },
+                            {
+                                "testName":  "LoginTest.shouldLoginWithValidCredentials",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  3.18
+                            },
+                            {
+                                "testName":  "CheckoutTest.shouldCompleteOrder",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.01
+                            },
+                            {
+                                "testName":  "SettingsTest.shouldSaveNotificationPreferences",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  0.53
+                            },
+                            {
+                                "testName":  "DashboardTest.shouldRenderSummaryCards",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  3.68
+                            },
+                            {
+                                "testName":  "CheckoutTest.shouldAddItemToCart",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.75
+                            },
+                            {
+                                "testName":  "UsersTest.shouldSearchByEmail",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  0.88
+                            },
+                            {
+                                "testName":  "OrdersTest.shouldFilterOrdersByStatus",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  5.29
+                            },
+                            {
+                                "testName":  "ReportsTest.shouldExportCsv",
+                                "status":  "SKIPPED",
+                                "errorMessage":  "org.testng.SkipException: Test skipped because a dependent setup step failed",
+                                "durationSeconds":  0.41
+                            },
+                            {
+                                "testName":  "UsersTest.shouldDeleteInactiveUser",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.26
+                            }
+                        ]
+}

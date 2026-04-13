@@ -1,0 +1,78 @@
+﻿{
+    "runName":  "Nightly Smoke Run - 2026-04-12",
+    "triggeredBy":  "GitHub Actions",
+    "testCaseResults":  [
+                            {
+                                "testName":  "CheckoutTest.shouldAddItemToCart",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  2.81
+                            },
+                            {
+                                "testName":  "ReportsTest.shouldExportCsv",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.68
+                            },
+                            {
+                                "testName":  "SettingsTest.shouldSaveNotificationPreferences",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.91
+                            },
+                            {
+                                "testName":  "UsersTest.shouldDeleteInactiveUser",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.31
+                            },
+                            {
+                                "testName":  "LoginTest.shouldShowErrorForInvalidPassword",
+                                "status":  "SKIPPED",
+                                "errorMessage":  "org.testng.SkipException: Test skipped because a dependent setup step failed",
+                                "durationSeconds":  0.68
+                            },
+                            {
+                                "testName":  "UsersTest.shouldSearchByEmail",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  3.63
+                            },
+                            {
+                                "testName":  "OrdersTest.shouldFilterOrdersByStatus",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  2.54
+                            },
+                            {
+                                "testName":  "ProfileTest.shouldUpdateUserDetails",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  5.22
+                            },
+                            {
+                                "testName":  "NavigationTest.shouldOpenOrdersPage",
+                                "status":  "FAILED",
+                                "errorMessage":  "org.openqa.selenium.NoSuchElementException: Unable to locate element: {\"method\":\"css selector\",\"selector\":\"[data-testid=\u0027submit-order-button\u0027]\"}",
+                                "durationSeconds":  1.22
+                            },
+                            {
+                                "testName":  "DashboardTest.shouldRenderSummaryCards",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.15
+                            },
+                            {
+                                "testName":  "CheckoutTest.shouldCompleteOrder",
+                                "status":  "PASSED",
+                                "errorMessage":  null,
+                                "durationSeconds":  4.96
+                            },
+                            {
+                                "testName":  "LoginTest.shouldLoginWithValidCredentials",
+                                "status":  "FAILED",
+                                "errorMessage":  "org.openqa.selenium.StaleElementReferenceException: stale element reference: element is not attached to the page document",
+                                "durationSeconds":  3.13
+                            }
+                        ]
+}
