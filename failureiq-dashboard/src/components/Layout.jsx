@@ -32,10 +32,10 @@ function Layout() {
     <div className="app-shell" data-testid="app-shell">
       <aside className="sidebar" data-testid="sidebar">
         <div className="brand-block">
-          <p className="brand-eyebrow">Phase 1</p>
+          <p className="brand-eyebrow">Phase 3A</p>
           <h1 className="brand-title">FailureIQ</h1>
           <p className="brand-caption">
-            UI for visualizing imported Selenium and TestNG execution results.
+            UI for visualizing test history, recurring failures, and flaky behavior.
           </p>
         </div>
 

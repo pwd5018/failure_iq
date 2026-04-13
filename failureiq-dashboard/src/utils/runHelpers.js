@@ -31,10 +31,22 @@ export function formatDateTime(value) {
 }
 
 export function buildTrendRuns(runs) {
-  return sortRunsNewestFirst(runs)
-    .slice(0, 6)
+  return runs
+    .slice(-8)
     .map((run) => ({
       ...run,
       runName: run.runName.length > 18 ? `${run.runName.slice(0, 18)}...` : run.runName,
     }));
+}
+
+export function formatDelta(value) {
+  if (value > 0) {
+    return `+${value}`;
+  }
+
+  return `${value}`;
+}
+
+export function formatPercentage(value) {
+  return `${Number(value).toFixed(1)}%`;
 }

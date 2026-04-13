@@ -23,6 +23,22 @@ export function getDashboardSummary() {
   return fetchJson('/dashboard/summary');
 }
 
+export function getDashboardTrends() {
+  return fetchJson('/dashboard/trends');
+}
+
+export function getLatestRunComparison() {
+  return fetchJson('/dashboard/run-comparison/latest');
+}
+
+export function getFlakyTests() {
+  return fetchJson('/tests/flaky');
+}
+
+export function getRecurringFailures() {
+  return fetchJson('/failures/recurring');
+}
+
 export function getTestRuns() {
   return fetchJson('/test-runs');
 }

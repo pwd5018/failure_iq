@@ -165,7 +165,8 @@ a {
 .metric-card,
 .table-panel,
 .chart-panel,
-.failed-tests-panel {
+.failed-tests-panel,
+.comparison-panel {
   padding: 24px;
 }
 
@@ -175,6 +176,10 @@ a {
 
 .metric-card-danger {
   border-color: rgba(239, 68, 68, 0.22);
+}
+
+.danger-text {
+  color: #b91c1c;
 }
 
 .metric-value {
@@ -385,6 +390,10 @@ a {
   background: linear-gradient(180deg, #f87171 0%, #dc2626 100%);
 }
 
+.trend-bar.skipped {
+  background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%);
+}
+
 .trend-label {
   text-align: center;
   font-size: 0.83rem;
@@ -395,6 +404,75 @@ a {
 .failed-tests-list {
   display: grid;
   gap: 16px;
+}
+
+.comparison-run-grid,
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.comparison-delta-grid {
+  margin-top: 20px;
+}
+
+.comparison-run-card,
+.failure-type-card {
+  border: 1px solid #e2e8f0;
+  background: rgba(248, 250, 252, 0.95);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.comparison-run-card h4,
+.failure-type-card h4 {
+  margin: 0 0 8px;
+}
+
+.comparison-label {
+  margin: 0 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.comparison-meta {
+  margin: 0 0 16px;
+  color: #64748b;
+}
+
+.comparison-stat-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.comparison-empty {
+  color: #64748b;
+}
+
+.comparison-empty p,
+.failure-type-card p {
+  margin: 0;
+}
+
+.inline-empty-state {
+  padding: 22px 0 6px;
+  color: #64748b;
+}
+
+.inline-empty-state p {
+  margin: 0;
+}
+
+.failure-type-list {
+  display: grid;
+  gap: 14px;
 }
 
 .failed-test-card {
@@ -451,6 +529,11 @@ a {
   }
 
   .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .comparison-run-grid,
+  .insights-grid {
     grid-template-columns: 1fr;
   }
 }

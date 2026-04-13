@@ -3,9 +3,9 @@ function TrendChart({ runs }) {
     return null;
   }
 
-  const chartRuns = runs.slice(0, 6).reverse();
+  const chartRuns = runs;
   const maxValue = Math.max(
-    ...chartRuns.flatMap((run) => [run.passedCount, run.failedCount, 1])
+    ...chartRuns.flatMap((run) => [run.passedCount, run.failedCount, run.skippedCount, 1])
   );
 
   return (
@@ -13,7 +13,7 @@ function TrendChart({ runs }) {
       <div className="panel-header">
         <div>
           <h3>Pass/Fail Trend</h3>
-          <p>Recent imported runs compared side by side.</p>
+          <p>Recent run history over time, using only the PostgreSQL data already stored in FailureIQ.</p>
         </div>
       </div>
 
@@ -30,6 +30,11 @@ function TrendChart({ runs }) {
                 className="trend-bar failed"
                 style={{ height: `${(run.failedCount / maxValue) * 160}px` }}
                 title={`Failed: ${run.failedCount}`}
+              />
+              <div
+                className="trend-bar skipped"
+                style={{ height: `${(run.skippedCount / maxValue) * 160}px` }}
+                title={`Skipped: ${run.skippedCount}`}
               />
             </div>
             <p className="trend-label">{run.runName}</p>
