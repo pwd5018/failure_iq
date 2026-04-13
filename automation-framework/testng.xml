@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<!--
+    This TestNG suite file tells TestNG which test classes to run.
+    IntelliJ can run this file directly, which makes it beginner-friendly.
+-->
+<suite name="FailureIQ Automation Suite" verbose="1">
+    <listeners>
+        <listener class-name="com.failureiq.automation.listeners.TestListener"/>
+    </listeners>
+
+    <test name="UI Tests">
+        <classes>
+            <class name="com.failureiq.automation.tests.LoginTests"/>
+            <class name="com.failureiq.automation.tests.UsersTests"/>
+            <class name="com.failureiq.automation.tests.OrdersTests"/>
+            <class name="com.failureiq.automation.tests.SettingsTests"/>
+            <class name="com.failureiq.automation.tests.FailureDemoTests"/>
+        </classes>
+    </test>
+</suite>

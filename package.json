@@ -1,20 +1,21 @@
 {
-  "name": "test-automation-dashboard",
+  "name": "failureiq-workspace",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "version": "1.0.0",
+  "description": "Root command launcher for FailureIQ projects",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.30.1"
+    "install:dashboard": "npm --prefix failureiq-dashboard install",
+    "install:fake-web-app": "npm --prefix fake-web-app install",
+    "install:frontends": "npm run install:fake-web-app && npm run install:dashboard",
+    "dev:fake-web-app": "npm --prefix fake-web-app run dev",
+    "dev:dashboard": "npm --prefix failureiq-dashboard run dev",
+    "frontend": "concurrently \"npm run dev:fake-web-app\" \"npm run dev:dashboard\"",
+    "backend": "powershell -Command \"$env:JAVA_HOME = 'C:\\Program Files\\JetBrains\\IntelliJ IDEA 2025.3.3\\jbr'; $env:Path = \\\"$env:JAVA_HOME\\bin;$env:Path\\\"; & 'C:\\Program Files\\JetBrains\\IntelliJ IDEA 2025.3.3\\plugins\\maven\\lib\\maven3\\bin\\mvn.cmd' -f backend\\pom.xml spring-boot:run\"",
+    "db:start": "docker compose up -d",
+    "db:stop": "docker compose down",
+    "all": "concurrently \"npm run frontend\" \"npm run backend\""
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^4.3.4",
-    "vite": "^5.4.11"
+    "concurrently": "^9.0.1"
   }
 }

@@ -1,0 +1,134 @@
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import EmptyState from '../components/EmptyState';
+import ErrorState from '../components/ErrorState';
+import FailedTestsList from '../components/FailedTestsList';
+import LoadingState from '../components/LoadingState';
+import PageHeader from '../components/PageHeader';
+import SummaryCard from '../components/SummaryCard';
+import StatusBadge from '../components/StatusBadge';
+import { getTestRunById } from '../utils/api';
+import { enrichRun, formatDateTime } from '../utils/runHelpers';
+
+function RunDetailPage() {
+  const { id } = useParams();
+  const [run, setRun] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const loadRun = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      const response = await getTestRunById(id);
+      setRun(enrichRun(response));
+    } catch (loadError) {
+      setError(loadError.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    loadRun();
+  }, [loadRun]);
+
+  const failedTests = useMemo(() => {
+    return run?.testCaseResults.filter((test) => test.status === 'FAILED') || [];
+  }, [run]);
+
+  if (loading) {
+    return <LoadingState message="Loading run details..." testId="run-detail-loading" />;
+  }
+
+  if (error) {
+    return <ErrorState message={error} onRetry={loadRun} testId="run-detail-error" />;
+  }
+
+  return (
+    <div className="page-section" data-testid="run-detail-page">
+      <PageHeader
+        eyebrow="Run Detail"
+        title={run.runName}
+        subtitle={`Triggered by ${run.triggeredBy} on ${formatDateTime(run.createdAt)}`}
+        action={
+          <Link to="/runs" className="secondary-button back-link" data-testid="back-to-runs-link">
+            Back To Runs
+          </Link>
+        }
+      />
+
+      <div className="metrics-grid">
+        <SummaryCard
+          label="Passed"
+          value={run.passedCount}
+          helperText="Tests that completed successfully"
+          tone="success"
+          testId="run-passed-summary"
+        />
+        <SummaryCard
+          label="Failed"
+          value={run.failedCount}
+          helperText="Tests that need investigation"
+          tone="danger"
+          testId="run-failed-summary"
+        />
+        <SummaryCard
+          label="Skipped"
+          value={run.skippedCount}
+          helperText="Tests skipped during execution"
+          testId="run-skipped-summary"
+        />
+      </div>
+
+      {failedTests.length > 0 ? (
+        <FailedTestsList failedTests={failedTests} />
+      ) : (
+        <EmptyState
+          title="No failed tests in this run"
+          message="This run completed without any failed test cases."
+          testId="no-failed-tests-state"
+        />
+      )}
+
+      <section className="card table-panel" data-testid="run-results-table-panel">
+        <div className="panel-header">
+          <div>
+            <h3>All Test Results</h3>
+            <p>Every test case from this run, with failures visually emphasized.</p>
+          </div>
+        </div>
+
+        <div className="table-wrapper">
+          <table className="data-table" data-testid="run-results-table">
+            <thead>
+              <tr>
+                <th>Test Name</th>
+                <th>Status</th>
+                <th>Duration</th>
+                <th>Error Message</th>
+              </tr>
+            </thead>
+            <tbody>
+              {run.testCaseResults.map((test) => (
+                <tr key={test.id} className={test.status === 'FAILED' ? 'failed-row' : ''}>
+                  <td>{test.testName}</td>
+                  <td>
+                    <StatusBadge status={test.status} />
+                  </td>
+                  <td>{test.durationSeconds} seconds</td>
+                  <td className={test.status === 'FAILED' ? 'failure-cell' : ''}>
+                    {test.errorMessage || 'No error message'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+export default RunDetailPage;
