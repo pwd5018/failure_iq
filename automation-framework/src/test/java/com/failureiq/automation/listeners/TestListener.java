@@ -5,6 +5,7 @@ import com.failureiq.automation.config.FrameworkConfig;
 import com.failureiq.automation.reporting.FailureIqReportWriter;
 import com.failureiq.automation.reporting.FailureIqRunReport;
 import com.failureiq.automation.reporting.ReportNameUtils;
+import com.failureiq.automation.reporting.FailureIqUploader;
 import com.failureiq.automation.reporting.TestCaseReportEntry;
 import com.failureiq.automation.utils.ScreenshotUtils;
 import org.testng.ISuite;
@@ -119,6 +120,13 @@ public class TestListener implements ITestListener, ISuiteListener {
 
         System.out.println("Finished suite: " + suite.getName());
         System.out.println("FailureIQ JSON written to: " + outputFilePath);
+
+        if (FrameworkConfig.isUploadEnabled()) {
+            System.out.println("Automatic upload is enabled. Sending report to FailureIQ...");
+            FailureIqUploader.uploadReport(runReport);
+        } else {
+            System.out.println("Automatic upload is disabled. JSON file was saved locally only.");
+        }
     }
 
     private TestCaseReportEntry buildEntry(ITestResult result, String screenshotPath) {

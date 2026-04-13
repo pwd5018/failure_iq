@@ -47,5 +47,13 @@ public final class FrameworkConfig {
         return PROPERTIES.getProperty("output.folder", "failureiq-output");
     }
 
+    public static boolean isUploadEnabled() {
+        return Boolean.parseBoolean(PROPERTIES.getProperty("upload.enabled", "false"));
+    }
+
+    public static String getFailureIqApiUrl() {
+        return PROPERTIES.getProperty("failureiq.api.url", "http://localhost:8080/api/test-runs");
+    }
+
     public static boolean headless = Boolean.parseBoolean(PROPERTIES.getProperty("headless"));
 }

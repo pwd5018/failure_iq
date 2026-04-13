@@ -4,3 +4,4 @@ dist
 backend/target
 .env
 automation-framework/target
+automation-framework/failureiq-output/
