@@ -59,6 +59,11 @@ public class UsersPage extends BasePage {
         return this;
     }
 
+    public UsersPage openDeleteModalForUser(long userId) {
+        click(By.cssSelector("[data-testid='delete-user-" + userId + "']"));
+        return this;
+    }
+
     public boolean isDeleteModalDisplayed() {
         return isDisplayed(deleteModal);
     }
@@ -66,5 +71,18 @@ public class UsersPage extends BasePage {
     public UsersPage cancelDelete() {
         click(cancelDeleteButton);
         return this;
+    }
+
+    public UsersPage confirmDelete() {
+        click(By.cssSelector("[data-testid='confirm-delete-button']"));
+        return this;
+    }
+
+    public boolean isUserRowDisplayed(long userId) {
+        return !driver.findElements(By.cssSelector("[data-testid='user-row-" + userId + "']")).isEmpty();
+    }
+
+    public String getDeleteModalText() {
+        return getText(deleteModal);
     }
 }

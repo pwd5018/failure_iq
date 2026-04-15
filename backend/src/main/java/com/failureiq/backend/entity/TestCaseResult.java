@@ -34,12 +34,25 @@ public class TestCaseResult {
     @Column(nullable = false)
     private String testName;
 
+    // These optional fields preserve richer Selenium/TestNG metadata for analysis features.
+    private String testClassName;
+
+    private String testMethodName;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TestStatus status;
 
+    private String failureType;
+
     @Column(length = 2000)
     private String errorMessage;
+
+    @Column(length = 8000)
+    private String stackTrace;
+
+    @Column(length = 1000)
+    private String screenshotPath;
 
     private Double durationSeconds;
 

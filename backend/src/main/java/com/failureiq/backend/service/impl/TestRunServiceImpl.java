@@ -63,8 +63,13 @@ public class TestRunServiceImpl implements TestRunService {
     private TestCaseResult mapToTestCaseEntity(TestCaseResultRequestDto dto, TestRun testRun) {
         return TestCaseResult.builder()
                 .testName(dto.getTestName())
+                .testClassName(dto.getTestClassName())
+                .testMethodName(dto.getTestMethodName())
                 .status(dto.getStatus())
+                .failureType(dto.getFailureType())
                 .errorMessage(dto.getErrorMessage())
+                .stackTrace(dto.getStackTrace())
+                .screenshotPath(dto.getScreenshotPath())
                 .durationSeconds(dto.getDurationSeconds())
                 .testRun(testRun)
                 .build();
@@ -74,8 +79,13 @@ public class TestRunServiceImpl implements TestRunService {
         return TestCaseResultResponseDto.builder()
                 .id(entity.getId())
                 .testName(entity.getTestName())
+                .testClassName(entity.getTestClassName())
+                .testMethodName(entity.getTestMethodName())
                 .status(entity.getStatus())
+                .failureType(entity.getFailureType())
                 .errorMessage(entity.getErrorMessage())
+                .stackTrace(entity.getStackTrace())
+                .screenshotPath(entity.getScreenshotPath())
                 .durationSeconds(entity.getDurationSeconds())
                 .build();
     }

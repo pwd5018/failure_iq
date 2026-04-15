@@ -4,6 +4,7 @@ import com.failureiq.backend.dto.DashboardTrendsResponseDto;
 import com.failureiq.backend.dto.FlakyTestDto;
 import com.failureiq.backend.dto.RecurringFailureDto;
 import com.failureiq.backend.dto.RunComparisonResponseDto;
+import com.failureiq.backend.dto.TestHistoryResponseDto;
 
 import java.util.List;
 
@@ -16,4 +17,6 @@ public interface HistoricalIntelligenceService {
     List<FlakyTestDto> getFlakyTests();
 
     List<RecurringFailureDto> getRecurringFailures();
+
+    TestHistoryResponseDto getTestHistory(String testClassName, String testMethodName, int limit);
 }

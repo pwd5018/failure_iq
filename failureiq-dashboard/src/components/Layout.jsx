@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', testId: 'nav-dashboard' },
+  { to: '/dashboard/run-diff', label: 'Run Diff', testId: 'nav-run-diff' },
   { to: '/runs', label: 'Test Runs', testId: 'nav-runs' },
 ];
 

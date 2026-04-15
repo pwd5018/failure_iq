@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import ClusterSummaryWidget from '../components/ClusterSummaryWidget';
 import ComparisonSummary from '../components/ComparisonSummary';
 import ErrorState from '../components/ErrorState';
 import FailureTypeTrendList from '../components/FailureTypeTrendList';
@@ -13,6 +15,7 @@ import {
   getDashboardSummary,
   getDashboardTrends,
   getFlakyTests,
+  getLatestRunClusters,
   getLatestRunComparison,
   getRecurringFailures,
   getTestRuns,
@@ -30,6 +33,7 @@ function DashboardPage() {
   const [runs, setRuns] = useState([]);
   const [trends, setTrends] = useState({ runTrends: [], failureTypeTrends: [] });
   const [comparison, setComparison] = useState(null);
+  const [latestRunClusters, setLatestRunClusters] = useState(null);
   const [flakyTests, setFlakyTests] = useState([]);
   const [recurringFailures, setRecurringFailures] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -45,6 +49,7 @@ function DashboardPage() {
         runsResponse,
         trendsResponse,
         comparisonResponse,
+        latestRunClustersResponse,
         flakyResponse,
         recurringResponse,
       ] = await Promise.all([
@@ -52,6 +57,7 @@ function DashboardPage() {
         getTestRuns(),
         getDashboardTrends(),
         getLatestRunComparison(),
+        getLatestRunClusters(),
         getFlakyTests(),
         getRecurringFailures(),
       ]);
@@ -62,6 +68,7 @@ function DashboardPage() {
       setRuns(enrichedRuns);
       setTrends(trendsResponse);
       setComparison(comparisonResponse);
+      setLatestRunClusters(latestRunClustersResponse);
       setFlakyTests(flakyResponse);
       setRecurringFailures(recurringResponse);
     } catch (loadError) {
@@ -143,7 +150,19 @@ function DashboardPage() {
       </div>
 
       <ComparisonSummary comparison={comparison} />
+      <section className="card table-panel" data-testid="run-diff-entry-panel">
+        <div className="panel-header">
+          <div>
+            <h3>Run Diff Workspace</h3>
+            <p>Open a dedicated latest-vs-previous diff view to see what broke, what got fixed, and what stayed bad.</p>
+          </div>
+          <Link to="/dashboard/run-diff" className="secondary-button" data-testid="open-run-diff-link">
+            Open Run Diff
+          </Link>
+        </div>
+      </section>
       <TrendChart runs={trendRuns} />
+      <ClusterSummaryWidget clusterResponse={latestRunClusters} />
       <div className="insights-grid">
         <InsightTable
           title="Top Flaky Tests"

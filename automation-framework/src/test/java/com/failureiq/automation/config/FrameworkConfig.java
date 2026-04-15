@@ -8,6 +8,7 @@ import java.util.Properties;
 public final class FrameworkConfig {
 
     private static final Properties PROPERTIES = new Properties();
+    private static String testNgScenarioProfileOverride;
 
     static {
         try (InputStream inputStream = FrameworkConfig.class
@@ -35,6 +36,27 @@ public final class FrameworkConfig {
         return PROPERTIES.getProperty("browser", "chrome");
     }
 
+    // The scenario profile can be controlled three ways:
+    // 1. a JVM property like -Dscenario.profile=timing-stress
+    // 2. the TestNG XML suite parameter
+    // 3. config.properties as the default fallback
+    public static ScenarioProfile getScenarioProfile() {
+        String overriddenProfile = System.getProperty("scenario.profile");
+        if (overriddenProfile != null && !overriddenProfile.isBlank()) {
+            return ScenarioProfile.fromValue(overriddenProfile);
+        }
+
+        if (testNgScenarioProfileOverride != null && !testNgScenarioProfileOverride.isBlank()) {
+            return ScenarioProfile.fromValue(testNgScenarioProfileOverride);
+        }
+
+        return ScenarioProfile.fromValue(PROPERTIES.getProperty("scenario.profile", "release-candidate"));
+    }
+
+    public static void setTestNgScenarioProfileOverride(String scenarioProfile) {
+        testNgScenarioProfileOverride = scenarioProfile;
+    }
+
     public static int getTimeoutSeconds() {
         return Integer.parseInt(PROPERTIES.getProperty("timeout.seconds", "10"));
     }
@@ -55,5 +77,5 @@ public final class FrameworkConfig {
         return PROPERTIES.getProperty("failureiq.api.url", "http://localhost:8080/api/test-runs");
     }
 
-    public static boolean headless = Boolean.parseBoolean(PROPERTIES.getProperty("headless"));
+    public static boolean headless = Boolean.parseBoolean(PROPERTIES.getProperty("headless", "false"));
 }

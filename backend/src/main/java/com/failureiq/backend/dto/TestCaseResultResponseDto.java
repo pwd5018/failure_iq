@@ -17,7 +17,12 @@ public class TestCaseResultResponseDto {
 
     private Long id;
     private String testName;
+    private String testClassName;
+    private String testMethodName;
     private TestStatus status;
+    private String failureType;
     private String errorMessage;
+    private String stackTrace;
+    private String screenshotPath;
     private Double durationSeconds;
 }

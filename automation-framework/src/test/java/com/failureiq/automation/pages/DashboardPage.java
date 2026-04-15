@@ -2,12 +2,19 @@ package com.failureiq.automation.pages;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+
+import java.util.List;
 
 // Page object for the fake app dashboard page.
 public class DashboardPage extends BasePage {
 
     private final By dashboardPage = By.cssSelector("[data-testid='dashboard-page']");
     private final By welcomeHeading = By.xpath("//h2[contains(text(),'Welcome back, Admin')]");
+    private final By revenueCard = By.cssSelector("[data-testid='metric-card-revenue']");
+    private final By usersCard = By.cssSelector("[data-testid='metric-card-users']");
+    private final By ordersCard = By.cssSelector("[data-testid='metric-card-orders']");
+    private final By activityPanel = By.cssSelector("[data-testid='dashboard-activity-panel']");
     private final By usersNavLink = By.cssSelector("[data-testid='nav-users']");
     private final By ordersNavLink = By.cssSelector("[data-testid='nav-orders']");
     private final By settingsNavLink = By.cssSelector("[data-testid='nav-settings']");
@@ -22,6 +29,19 @@ public class DashboardPage extends BasePage {
 
     public String getWelcomeMessage() {
         return getText(welcomeHeading);
+    }
+
+    public boolean areMetricCardsVisible() {
+        return isDisplayed(revenueCard) && isDisplayed(usersCard) && isDisplayed(ordersCard);
+    }
+
+    public String getActivityPanelText() {
+        return getText(activityPanel);
+    }
+
+    public int getVisibleMetricCardCount() {
+        List<WebElement> cards = driver.findElements(By.cssSelector("[data-testid^='metric-card-']"));
+        return cards.size();
     }
 
     public UsersPage goToUsersPage() {

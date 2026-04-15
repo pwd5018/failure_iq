@@ -9,6 +9,8 @@ import com.failureiq.backend.dto.RunComparisonResponseDto;
 import com.failureiq.backend.dto.RunDeltaDto;
 import com.failureiq.backend.dto.RunOverviewDto;
 import com.failureiq.backend.dto.RunTrendPointDto;
+import com.failureiq.backend.dto.TestHistoryEntryDto;
+import com.failureiq.backend.dto.TestHistoryResponseDto;
 import com.failureiq.backend.entity.TestCaseResult;
 import com.failureiq.backend.entity.TestRun;
 import com.failureiq.backend.enums.TestStatus;
@@ -26,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 
 // This service calculates simple historical metrics using the runs already stored in PostgreSQL.
 @Service
@@ -179,14 +182,123 @@ public class HistoricalIntelligenceServiceImpl implements HistoricalIntelligence
                 .map(this::buildRecurringFailure)
                 .sorted(Comparator.comparingLong(RecurringFailureDto::getFailureCount).reversed()
                         .thenComparing(RecurringFailureDto::getLastSeenAt, Comparator.reverseOrder())
-                        .thenComparing(RecurringFailureDto::getTestName))
+                .thenComparing(RecurringFailureDto::getTestName))
                 .toList();
+    }
+
+    @Override
+    public TestHistoryResponseDto getTestHistory(String testClassName, String testMethodName, int limit) {
+        int safeLimit = Math.max(limit, 1);
+        List<TestHistoryEntrySource> matchingEntries = testRunRepository.findAllByOrderByCreatedAtDesc().stream()
+                .flatMap(run -> run.getTestCaseResults().stream()
+                        .filter(result -> matchesRequestedTest(result, testClassName, testMethodName))
+                        .map(result -> new TestHistoryEntrySource(run, result)))
+                .limit(safeLimit)
+                .toList();
+
+        if (matchingEntries.isEmpty()) {
+            return TestHistoryResponseDto.builder()
+                    .testClassName(testClassName)
+                    .testMethodName(testMethodName)
+                    .totalRunsChecked(0)
+                    .passCount(0)
+                    .failCount(0)
+                    .skipCount(0)
+                    .flakyScore(0.0)
+                    .currentStatus("NO_DATA")
+                    .mostCommonFailureType("No failures yet")
+                    .historyEntries(List.of())
+                    .build();
+        }
+
+        List<TestHistoryEntrySource> orderedOldestFirst = new ArrayList<>(matchingEntries);
+        orderedOldestFirst.sort(Comparator.comparing(source -> source.run().getCreatedAt()));
+
+        long passCount = matchingEntries.stream()
+                .filter(entry -> entry.result().getStatus() == TestStatus.PASSED)
+                .count();
+        long failCount = matchingEntries.stream()
+                .filter(entry -> entry.result().getStatus() == TestStatus.FAILED)
+                .count();
+        long skipCount = matchingEntries.stream()
+                .filter(entry -> entry.result().getStatus() == TestStatus.SKIPPED)
+                .count();
+
+        LocalDateTime lastPassedTimestamp = matchingEntries.stream()
+                .filter(entry -> entry.result().getStatus() == TestStatus.PASSED)
+                .map(entry -> entry.run().getCreatedAt())
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+
+        LocalDateTime lastFailedTimestamp = matchingEntries.stream()
+                .filter(entry -> entry.result().getStatus() == TestStatus.FAILED)
+                .map(entry -> entry.run().getCreatedAt())
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+
+        Map<String, Long> failureTypeCounts = matchingEntries.stream()
+                .filter(entry -> entry.result().getStatus() == TestStatus.FAILED)
+                .map(entry -> deriveFailureType(entry.result()))
+                .filter(type -> !type.isBlank())
+                .collect(LinkedHashMap::new, (map, value) -> map.merge(value, 1L, Long::sum), Map::putAll);
+
+        String mostCommonFailureType = failureTypeCounts.entrySet().stream()
+                .max(Map.Entry.<String, Long>comparingByValue()
+                        .thenComparing(Map.Entry.comparingByKey()))
+                .map(Map.Entry::getKey)
+                .orElse("No failures yet");
+
+        return TestHistoryResponseDto.builder()
+                .testClassName(resolveClassName(matchingEntries.get(0).result()))
+                .testMethodName(resolveMethodName(matchingEntries.get(0).result()))
+                .totalRunsChecked(matchingEntries.size())
+                .passCount(passCount)
+                .failCount(failCount)
+                .skipCount(skipCount)
+                .flakyScore(roundToOneDecimal(calculateFlakyScore(orderedOldestFirst)))
+                .lastPassedTimestamp(lastPassedTimestamp)
+                .lastFailedTimestamp(lastFailedTimestamp)
+                .currentStatus(matchingEntries.get(0).result().getStatus().name())
+                .mostCommonFailureType(mostCommonFailureType)
+                .historyEntries(matchingEntries.stream()
+                        .map(this::mapToTestHistoryEntry)
+                        .toList())
+                .build();
     }
 
     private List<TestRun> getLatestRuns(int limit) {
         return testRunRepository.findAllByOrderByCreatedAtDesc().stream()
                 .limit(limit)
                 .toList();
+    }
+
+    private boolean matchesRequestedTest(TestCaseResult result, String requestedClassName, String requestedMethodName) {
+        return Objects.equals(resolveClassName(result), requestedClassName)
+                && Objects.equals(resolveMethodName(result), requestedMethodName);
+    }
+
+    private String resolveClassName(TestCaseResult result) {
+        if (result.getTestClassName() != null && !result.getTestClassName().isBlank()) {
+            return result.getTestClassName();
+        }
+
+        if (result.getTestName() != null && result.getTestName().contains(".")) {
+            return result.getTestName().substring(0, result.getTestName().lastIndexOf('.'));
+        }
+
+        return "UnknownClass";
+    }
+
+    private String resolveMethodName(TestCaseResult result) {
+        if (result.getTestMethodName() != null && !result.getTestMethodName().isBlank()) {
+            return result.getTestMethodName();
+        }
+
+        if (result.getTestName() != null && result.getTestName().contains(".")) {
+            return result.getTestName().substring(result.getTestName().lastIndexOf('.') + 1);
+        }
+
+        return result.getTestName();
     }
 
     private RunTrendPointDto mapToRunTrendPoint(TestRun run) {
@@ -267,6 +379,31 @@ public class HistoricalIntelligenceServiceImpl implements HistoricalIntelligence
                 .build();
     }
 
+    private double calculateFlakyScore(List<TestHistoryEntrySource> orderedEntries) {
+        long statusChanges = 0;
+
+        for (int index = 1; index < orderedEntries.size(); index++) {
+            if (orderedEntries.get(index).result().getStatus() != orderedEntries.get(index - 1).result().getStatus()) {
+                statusChanges++;
+            }
+        }
+
+        long possibleChanges = Math.max(orderedEntries.size() - 1, 1);
+        return (statusChanges * 100.0) / possibleChanges;
+    }
+
+    private TestHistoryEntryDto mapToTestHistoryEntry(TestHistoryEntrySource entrySource) {
+        return TestHistoryEntryDto.builder()
+                .runId(entrySource.run().getId())
+                .runName(entrySource.run().getRunName())
+                .executionTimestamp(entrySource.run().getCreatedAt())
+                .status(entrySource.result().getStatus().name())
+                .durationSeconds(entrySource.result().getDurationSeconds())
+                .failureType(deriveFailureType(entrySource.result()))
+                .errorMessage(entrySource.result().getErrorMessage())
+                .build();
+    }
+
     private RecurringFailureDto buildRecurringFailure(List<FailedOccurrence> occurrences) {
         FailedOccurrence latestOccurrence = occurrences.stream()
                 .max(Comparator.comparing(FailedOccurrence::lastSeenAt))
@@ -296,6 +433,18 @@ public class HistoricalIntelligenceServiceImpl implements HistoricalIntelligence
         return messageStart;
     }
 
+    private String deriveFailureType(TestCaseResult result) {
+        if (result.getFailureType() != null && !result.getFailureType().isBlank()) {
+            return result.getFailureType();
+        }
+
+        if (result.getErrorMessage() == null || result.getErrorMessage().isBlank()) {
+            return "";
+        }
+
+        return extractFailureType(result.getErrorMessage());
+    }
+
     private double roundToOneDecimal(double value) {
         return Math.round(value * 10.0) / 10.0;
     }
@@ -305,6 +454,12 @@ public class HistoricalIntelligenceServiceImpl implements HistoricalIntelligence
             String failureType,
             String errorMessage,
             LocalDateTime lastSeenAt
+    ) {
+    }
+
+    private record TestHistoryEntrySource(
+            TestRun run,
+            TestCaseResult result
     ) {
     }
 }

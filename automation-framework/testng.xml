@@ -4,19 +4,31 @@
 <!--
     This TestNG suite file tells TestNG which test classes to run.
     IntelliJ can run this file directly, which makes it beginner-friendly.
+    To cycle profiles in IntelliJ, change the suite parameter below:
+    release-candidate
+    timing-stress
+    ui-regression
+
+    JVM override still works too:
+    -Dscenario.profile=release-candidate
+    -Dscenario.profile=timing-stress
+    -Dscenario.profile=ui-regression
 -->
 <suite name="FailureIQ Automation Suite" verbose="1">
+    <parameter name="scenario.profile" value="release-candidate"/>
+
     <listeners>
         <listener class-name="com.failureiq.automation.listeners.TestListener"/>
     </listeners>
 
     <test name="UI Tests">
         <classes>
-            <class name="com.failureiq.automation.tests.LoginTests"/>
-            <class name="com.failureiq.automation.tests.UsersTests"/>
-            <class name="com.failureiq.automation.tests.OrdersTests"/>
-            <class name="com.failureiq.automation.tests.SettingsTests"/>
-            <class name="com.failureiq.automation.tests.FailureDemoTests"/>
+<!--            <class name="com.failureiq.automation.tests.LoginTests"/>-->
+<!--            <class name="com.failureiq.automation.tests.DashboardTests"/>-->
+<!--            <class name="com.failureiq.automation.tests.UsersTests"/>-->
+<!--            <class name="com.failureiq.automation.tests.OrdersTests"/>-->
+<!--            <class name="com.failureiq.automation.tests.SettingsTests"/>-->
+            <class name="com.failureiq.automation.tests.ProfileDrivenQualityTests"/>
         </classes>
     </test>
 </suite>

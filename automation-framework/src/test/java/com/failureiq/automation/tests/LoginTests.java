@@ -26,4 +26,23 @@ public class LoginTests extends BaseTest {
         Assert.assertTrue(loginPage.isLoginErrorDisplayed(), "Invalid login message should be shown.");
         Assert.assertEquals(loginPage.getInvalidLoginMessage(), "Invalid username or password.");
     }
+
+    @Test(description = "Submitting an empty login form should show required field validation")
+    public void emptyCredentialsValidationTest() {
+        LoginPage loginPage = openLoginPage();
+        loginPage.submitEmptyLogin();
+
+        Assert.assertEquals(loginPage.getUsernameRequiredMessage(), "Username is required.");
+        Assert.assertEquals(loginPage.getPasswordRequiredMessage(), "Password is required.");
+    }
+
+    @Test(description = "Successful login should show a temporary signing in state before redirect")
+    public void loginButtonShowsSigningInStateTest() {
+        LoginPage loginPage = openLoginPage();
+        loginPage.enterUsername("admin")
+                .enterPassword("password123")
+                .clickLogin();
+
+        Assert.assertEquals(loginPage.getLoginButtonText(), "Signing in...");
+    }
 }

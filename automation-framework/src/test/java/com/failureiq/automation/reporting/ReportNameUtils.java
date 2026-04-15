@@ -14,8 +14,8 @@ public final class ReportNameUtils {
         return "run-" + UUID.randomUUID().toString().substring(0, 8);
     }
 
-    public static String createRunName(String suiteName, String executionTimestamp) {
-        return suiteName + " - " + executionTimestamp;
+    public static String createRunName(String suiteName, String profileName, String executionTimestamp) {
+        return suiteName + " - " + profileName + " - " + executionTimestamp;
     }
 
     public static String createDisplayTimestamp() {

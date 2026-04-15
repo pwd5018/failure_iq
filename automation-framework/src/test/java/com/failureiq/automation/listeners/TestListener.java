@@ -2,6 +2,7 @@ package com.failureiq.automation.listeners;
 
 import com.failureiq.automation.base.BaseTest;
 import com.failureiq.automation.config.FrameworkConfig;
+import com.failureiq.automation.config.ScenarioProfile;
 import com.failureiq.automation.reporting.FailureIqReportWriter;
 import com.failureiq.automation.reporting.FailureIqRunReport;
 import com.failureiq.automation.reporting.ReportNameUtils;
@@ -33,18 +34,24 @@ public class TestListener implements ITestListener, ISuiteListener {
     public void onStart(ISuite suite) {
         String runId = ReportNameUtils.createRunId();
         String executionTimestamp = ReportNameUtils.createDisplayTimestamp();
+        ScenarioProfile scenarioProfile = FrameworkConfig.getScenarioProfile();
 
         runReport = new FailureIqRunReport();
         runReport.setSuiteName(suite.getName());
         runReport.setRunId(runId);
         runReport.setExecutionTimestamp(executionTimestamp);
-        runReport.setRunName(ReportNameUtils.createRunName(suite.getName(), executionTimestamp));
-        runReport.setTriggeredBy("Local TestNG Framework");
+        runReport.setRunName(ReportNameUtils.createRunName(
+                suite.getName(),
+                scenarioProfile.getDisplayName(),
+                executionTimestamp
+        ));
+        runReport.setTriggeredBy("Local TestNG Framework - " + scenarioProfile.getDisplayName());
 
         screenshotFolder = Path.of(FrameworkConfig.getOutputFolder(), "screenshots", runId);
 
         System.out.println("Starting suite: " + suite.getName());
         System.out.println("FailureIQ runId: " + runId);
+        System.out.println("Scenario profile: " + scenarioProfile.getDisplayName());
     }
 
     @Override

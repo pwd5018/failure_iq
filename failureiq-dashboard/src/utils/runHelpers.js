@@ -50,3 +50,25 @@ export function formatDelta(value) {
 export function formatPercentage(value) {
   return `${Number(value).toFixed(1)}%`;
 }
+
+export function buildTestIdentity(test) {
+  if (test.testClassName && test.testMethodName) {
+    return {
+      testClassName: test.testClassName,
+      testMethodName: test.testMethodName,
+    };
+  }
+
+  if (test.testName?.includes('.')) {
+    const lastDotIndex = test.testName.lastIndexOf('.');
+    return {
+      testClassName: test.testName.slice(0, lastDotIndex),
+      testMethodName: test.testName.slice(lastDotIndex + 1),
+    };
+  }
+
+  return {
+    testClassName: 'UnknownClass',
+    testMethodName: test.testName || 'UnknownMethod',
+  };
+}

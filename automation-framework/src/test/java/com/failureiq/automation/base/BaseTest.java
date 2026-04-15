@@ -1,9 +1,12 @@
 package com.failureiq.automation.base;
 
 import com.failureiq.automation.config.FrameworkConfig;
+import com.failureiq.automation.config.ScenarioProfile;
 import com.failureiq.automation.pages.LoginPage;
 import com.failureiq.automation.utils.DriverFactory;
 import org.openqa.selenium.WebDriver;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 
@@ -14,7 +17,12 @@ public class BaseTest {
     protected WebDriver driver;
 
     @BeforeMethod
-    public void setUp() {
+    @Parameters("scenario.profile")
+    public void setUp(@Optional("") String scenarioProfile) {
+        if (scenarioProfile != null && !scenarioProfile.isBlank()) {
+            FrameworkConfig.setTestNgScenarioProfileOverride(scenarioProfile);
+        }
+
         driver = DriverFactory.createDriver();
         driver.get(FrameworkConfig.getBaseUrl());
     }
@@ -32,6 +40,10 @@ public class BaseTest {
 
     protected void loginAsValidUser() {
         openLoginPage().login("admin", "password123");
+    }
+
+    protected ScenarioProfile getScenarioProfile() {
+        return FrameworkConfig.getScenarioProfile();
     }
 
     public WebDriver getDriver() {

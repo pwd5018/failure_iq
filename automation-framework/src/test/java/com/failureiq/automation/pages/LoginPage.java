@@ -3,6 +3,10 @@ package com.failureiq.automation.pages;
 import com.failureiq.automation.config.FrameworkConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+import java.time.Duration;
 
 // Page object for the fake app login page.
 public class LoginPage extends BasePage {
@@ -37,10 +41,34 @@ public class LoginPage extends BasePage {
         click(loginButton);
     }
 
+    public LoginPage submitEmptyLogin() {
+        click(loginButton);
+        return this;
+    }
+
     public DashboardPage login(String username, String password) {
         enterUsername(username);
         enterPassword(password);
         clickLogin();
+        return new DashboardPage(driver);
+    }
+
+    public String getLoginButtonText() {
+        return getText(loginButton);
+    }
+
+    public boolean waitForLoginButtonTextWithin(Duration duration, String expectedText) {
+        try {
+            WebDriverWait shortWait = new WebDriverWait(driver, duration);
+            return shortWait.until(ExpectedConditions.textToBe(loginButton, expectedText));
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    public DashboardPage waitForDashboardWithin(Duration duration) {
+        WebDriverWait shortWait = new WebDriverWait(driver, duration);
+        shortWait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-testid='dashboard-page']")));
         return new DashboardPage(driver);
     }
 

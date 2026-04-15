@@ -1,39 +1,26 @@
 package com.failureiq.backend.dto;
 
-import com.failureiq.backend.enums.TestStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// This DTO describes one test case result sent by the client.
+// This DTO describes one failed test inside a cluster.
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TestCaseResultRequestDto {
+public class FailureClusterMemberDto {
 
-    @NotBlank(message = "Test name is required")
+    private Long id;
     private String testName;
-
     private String testClassName;
-
     private String testMethodName;
-
-    @NotNull(message = "Status is required")
-    private TestStatus status;
-
     private String failureType;
-
     private String errorMessage;
-
     private String stackTrace;
-
     private String screenshotPath;
-
     private Double durationSeconds;
 }

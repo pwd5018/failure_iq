@@ -3,16 +3,18 @@ import { Link, useParams } from 'react-router-dom';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import FailedTestsList from '../components/FailedTestsList';
+import FailureClustersPanel from '../components/FailureClustersPanel';
 import LoadingState from '../components/LoadingState';
 import PageHeader from '../components/PageHeader';
 import SummaryCard from '../components/SummaryCard';
 import StatusBadge from '../components/StatusBadge';
-import { getTestRunById } from '../utils/api';
-import { enrichRun, formatDateTime } from '../utils/runHelpers';
+import { getFailureClustersForRun, getTestRunById } from '../utils/api';
+import { buildTestIdentity, enrichRun, formatDateTime } from '../utils/runHelpers';
 
 function RunDetailPage() {
   const { id } = useParams();
   const [run, setRun] = useState(null);
+  const [clusters, setClusters] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -21,8 +23,13 @@ function RunDetailPage() {
       setLoading(true);
       setError('');
 
-      const response = await getTestRunById(id);
-      setRun(enrichRun(response));
+      const [runResponse, clusterResponse] = await Promise.all([
+        getTestRunById(id),
+        getFailureClustersForRun(id),
+      ]);
+
+      setRun(enrichRun(runResponse));
+      setClusters(clusterResponse);
     } catch (loadError) {
       setError(loadError.message);
     } finally {
@@ -92,6 +99,8 @@ function RunDetailPage() {
         />
       )}
 
+      <FailureClustersPanel clusterResponse={clusters} />
+
       <section className="card table-panel" data-testid="run-results-table-panel">
         <div className="panel-header">
           <div>
@@ -108,21 +117,35 @@ function RunDetailPage() {
                 <th>Status</th>
                 <th>Duration</th>
                 <th>Error Message</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {run.testCaseResults.map((test) => (
-                <tr key={test.id} className={test.status === 'FAILED' ? 'failed-row' : ''}>
-                  <td>{test.testName}</td>
-                  <td>
-                    <StatusBadge status={test.status} />
-                  </td>
-                  <td>{test.durationSeconds} seconds</td>
-                  <td className={test.status === 'FAILED' ? 'failure-cell' : ''}>
-                    {test.errorMessage || 'No error message'}
-                  </td>
-                </tr>
-              ))}
+              {run.testCaseResults.map((test) => {
+                const testIdentity = buildTestIdentity(test);
+
+                return (
+                  <tr key={test.id} className={test.status === 'FAILED' ? 'failed-row' : ''}>
+                    <td>{test.testName}</td>
+                    <td>
+                      <StatusBadge status={test.status} />
+                    </td>
+                    <td>{test.durationSeconds} seconds</td>
+                    <td className={test.status === 'FAILED' ? 'failure-cell' : ''}>
+                      {test.errorMessage || 'No error message'}
+                    </td>
+                    <td>
+                      <Link
+                        to={`/tests/history?testClassName=${encodeURIComponent(testIdentity.testClassName)}&testMethodName=${encodeURIComponent(testIdentity.testMethodName)}`}
+                        className="table-link"
+                        data-testid={`view-history-link-${test.id}`}
+                      >
+                        View History
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -31,6 +31,10 @@ export function getLatestRunComparison() {
   return fetchJson('/dashboard/run-comparison/latest');
 }
 
+export function getLatestRunDiff() {
+  return fetchJson('/dashboard/run-diff/latest');
+}
+
 export function getFlakyTests() {
   return fetchJson('/tests/flaky');
 }
@@ -39,10 +43,28 @@ export function getRecurringFailures() {
   return fetchJson('/failures/recurring');
 }
 
+export function getLatestRunClusters() {
+  return fetchJson('/dashboard/latest-run-clusters');
+}
+
 export function getTestRuns() {
   return fetchJson('/test-runs');
 }
 
 export function getTestRunById(id) {
   return fetchJson(`/test-runs/${id}`);
+}
+
+export function getFailureClustersForRun(id) {
+  return fetchJson(`/test-runs/${id}/failure-clusters`);
+}
+
+export function getTestHistory(testClassName, testMethodName, limit = 10) {
+  const params = new URLSearchParams({
+    testClassName,
+    testMethodName,
+    limit: String(limit),
+  });
+
+  return fetchJson(`/tests/history?${params.toString()}`);
 }
