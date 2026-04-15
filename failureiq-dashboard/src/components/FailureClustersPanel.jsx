@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import ScreenshotQuickViewButton from './ScreenshotQuickViewButton';
 
 function FailureClustersPanel({ clusterResponse }) {
   const clusters = clusterResponse?.clusters || [];
@@ -81,6 +82,11 @@ function FailureClustersPanel({ clusterResponse }) {
                           </div>
                         </div>
                         <pre className="failure-message">{member.errorMessage || 'No error message stored.'}</pre>
+                        <ScreenshotQuickViewButton
+                          testResultId={member.id}
+                          buttonLabel="View Screenshot"
+                          testId={`cluster-screenshot-${member.id}`}
+                        />
                       </article>
                     ))}
                   </div>

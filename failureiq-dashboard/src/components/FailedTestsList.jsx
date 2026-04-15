@@ -1,3 +1,4 @@
+import ScreenshotQuickViewButton from './ScreenshotQuickViewButton';
 import StatusBadge from './StatusBadge';
 
 function FailedTestsList({ failedTests }) {
@@ -21,6 +22,11 @@ function FailedTestsList({ failedTests }) {
               <StatusBadge status={test.status} />
             </div>
             <pre className="failure-message">{test.errorMessage}</pre>
+            <ScreenshotQuickViewButton
+              testResultId={test.id}
+              buttonLabel="View Screenshot"
+              testId={`failed-test-screenshot-${test.id}`}
+            />
           </article>
         ))}
       </div>

@@ -8,20 +8,23 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-// This DTO represents one result for a single test in one run.
+// This DTO gives the frontend the information needed to preview a screenshot safely.
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TestHistoryEntryDto {
+public class ScreenshotMetadataResponseDto {
 
     private Long testResultId;
+    private String testName;
     private Long runId;
     private String runName;
     private LocalDateTime executionTimestamp;
-    private String status;
-    private Double durationSeconds;
     private String failureType;
     private String errorMessage;
+    private String screenshotPath;
+    private String imageUrl;
+    private boolean screenshotExists;
+    private String message;
 }

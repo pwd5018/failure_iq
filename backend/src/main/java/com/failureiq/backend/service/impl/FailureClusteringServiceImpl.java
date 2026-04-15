@@ -176,23 +176,53 @@ public class FailureClusteringServiceImpl implements FailureClusteringService {
         String failureType = deriveFailureType(result).toLowerCase(Locale.US);
         String errorMessage = valueOrEmpty(result.getErrorMessage()).toLowerCase(Locale.US);
 
-        if (failureType.contains("timeout") || errorMessage.contains("timeout") || errorMessage.contains("expected condition")) {
-            return "Timeout / timing issue";
-        }
-
+        // Prefer the explicit Selenium/TestNG failure type over message text.
+        // This avoids misclassifying wrapped failures whose message happens to
+        // mention waiting or expected conditions.
         if (failureType.contains("nosuchelement")
                 || failureType.contains("staleelementreference")
-                || errorMessage.contains("unable to locate element")
-                || errorMessage.contains("stale element")) {
+                || failureType.contains("elementnotinteractable")
+                || failureType.contains("invalidselectorexception")) {
             return "Locator / element issue";
         }
 
-        if (failureType.contains("assertionerror") || errorMessage.contains("expected [") || errorMessage.contains("assert")) {
+        if (failureType.contains("elementclickintercepted")) {
+            return "Click interception / UI overlap";
+        }
+
+        if (failureType.contains("assertionerror")) {
             return "Assertion mismatch";
         }
 
-        if (failureType.contains("elementclickintercepted") || errorMessage.contains("click intercepted")) {
+        if (failureType.contains("timeout")
+                || failureType.contains("timeoutexception")
+                || failureType.contains("scripttimeoutexception")) {
+            return "Timeout / timing issue";
+        }
+
+        // If the failure type is not enough, fall back to the error message.
+        if (errorMessage.contains("unable to locate element")
+                || errorMessage.contains("no such element")
+                || errorMessage.contains("stale element")
+                || errorMessage.contains("invalid selector")) {
+            return "Locator / element issue";
+        }
+
+        if (errorMessage.contains("click intercepted")
+                || errorMessage.contains("other element would receive the click")) {
             return "Click interception / UI overlap";
+        }
+
+        if (errorMessage.contains("expected [")
+                || errorMessage.contains("assert")
+                || errorMessage.contains("but found [")) {
+            return "Assertion mismatch";
+        }
+
+        if (errorMessage.contains("timeout")
+                || errorMessage.contains("timed out")
+                || errorMessage.contains("expected condition")) {
+            return "Timeout / timing issue";
         }
 
         return "Unknown / mixed issue";

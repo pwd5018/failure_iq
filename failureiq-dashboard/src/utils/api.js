@@ -68,3 +68,7 @@ export function getTestHistory(testClassName, testMethodName, limit = 10) {
 
   return fetchJson(`/tests/history?${params.toString()}`);
 }
+
+export function getScreenshotMetadata(testResultId) {
+  return fetchJson(`/test-results/${testResultId}/screenshot`);
+}

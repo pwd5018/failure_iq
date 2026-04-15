@@ -4,6 +4,7 @@ import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import LoadingState from '../components/LoadingState';
 import PageHeader from '../components/PageHeader';
+import ScreenshotQuickViewButton from '../components/ScreenshotQuickViewButton';
 import SummaryCard from '../components/SummaryCard';
 import TestHistoryTimeline from '../components/TestHistoryTimeline';
 import { getTestHistory } from '../utils/api';
@@ -137,6 +138,7 @@ function TestHistoryPage() {
                   <th>Duration</th>
                   <th>Failure Type</th>
                   <th>Error Message</th>
+                  <th>Screenshot</th>
                 </tr>
               </thead>
               <tbody>
@@ -149,6 +151,17 @@ function TestHistoryPage() {
                     <td>{entry.failureType || 'No failure type'}</td>
                     <td className={entry.status === 'FAILED' ? 'failure-cell' : ''}>
                       {entry.errorMessage || 'No error message'}
+                    </td>
+                    <td>
+                      {entry.status === 'FAILED' ? (
+                        <ScreenshotQuickViewButton
+                          testResultId={entry.testResultId}
+                          buttonLabel="View Screenshot"
+                          testId={`history-screenshot-${entry.testResultId}`}
+                        />
+                      ) : (
+                        <span className="diff-subtext">No screenshot</span>
+                      )}
                     </td>
                   </tr>
                 ))}

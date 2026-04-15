@@ -394,6 +394,7 @@ public class HistoricalIntelligenceServiceImpl implements HistoricalIntelligence
 
     private TestHistoryEntryDto mapToTestHistoryEntry(TestHistoryEntrySource entrySource) {
         return TestHistoryEntryDto.builder()
+                .testResultId(entrySource.result().getId())
                 .runId(entrySource.run().getId())
                 .runName(entrySource.run().getRunName())
                 .executionTimestamp(entrySource.run().getCreatedAt())

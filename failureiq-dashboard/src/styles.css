@@ -580,6 +580,129 @@ a {
   margin-bottom: 12px;
 }
 
+.screenshot-action-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.inline-error-text {
+  margin: 0;
+  color: #b91c1c;
+  font-size: 0.88rem;
+}
+
+.compact-button,
+.screenshot-button {
+  padding: 10px 14px;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  z-index: 30;
+}
+
+.modal-card {
+  width: min(100%, 1100px);
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.28);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.modal-header h3 {
+  margin: 0;
+}
+
+.icon-button {
+  border: none;
+  background: transparent;
+  color: #475569;
+  padding: 6px 8px;
+}
+
+.screenshot-modal-card {
+  max-height: 90vh;
+  overflow: auto;
+}
+
+.screenshot-modal-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 20px;
+}
+
+.screenshot-preview-panel,
+.screenshot-details-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.screenshot-toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.screenshot-canvas {
+  min-height: 420px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #f8fafc;
+  overflow: auto;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.screenshot-image {
+  max-width: 100%;
+  transform-origin: center top;
+  transition: transform 0.2s ease;
+}
+
+.screenshot-placeholder {
+  margin: 0;
+  text-align: center;
+  color: #64748b;
+}
+
+.detail-pair {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(248, 250, 252, 0.9);
+}
+
+.detail-label {
+  display: block;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.detail-pair p {
+  margin: 0;
+}
+
 .comparison-delta-grid {
   margin-top: 20px;
 }
@@ -701,6 +824,10 @@ a {
 
   .comparison-run-grid,
   .insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .screenshot-modal-grid {
     grid-template-columns: 1fr;
   }
 }

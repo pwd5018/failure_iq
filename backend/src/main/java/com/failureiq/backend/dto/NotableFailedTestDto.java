@@ -6,22 +6,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
-// This DTO represents one result for a single test in one run.
+// This DTO surfaces a small set of failed tests that are especially worth investigating.
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TestHistoryEntryDto {
+public class NotableFailedTestDto {
 
     private Long testResultId;
-    private Long runId;
-    private String runName;
-    private LocalDateTime executionTimestamp;
-    private String status;
-    private Double durationSeconds;
+    private String testName;
+    private String testClassName;
+    private String testMethodName;
     private String failureType;
     private String errorMessage;
+    private Double durationSeconds;
+    private boolean screenshotExists;
+    private String issueCategory;
 }
