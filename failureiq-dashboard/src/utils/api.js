@@ -59,6 +59,40 @@ export function getFailureClustersForRun(id) {
   return fetchJson(`/test-runs/${id}/failure-clusters`);
 }
 
+export function getRunSummary(id, summaryType = 'EXECUTIVE', summaryLength = 'SHORT') {
+  const params = new URLSearchParams({
+    summaryType,
+    summaryLength,
+  });
+
+  return fetchJson(`/test-runs/${id}/summary?${params.toString()}`);
+}
+
+export function getRunTriageSummary(id, summaryLength = 'SHORT') {
+  const params = new URLSearchParams({
+    summaryLength,
+  });
+
+  return fetchJson(`/test-runs/${id}/summary/triage?${params.toString()}`);
+}
+
+export function getLatestRunSummary(summaryType = 'EXECUTIVE', summaryLength = 'SHORT') {
+  const params = new URLSearchParams({
+    summaryType,
+    summaryLength,
+  });
+
+  return fetchJson(`/test-runs/latest/summary?${params.toString()}`);
+}
+
+export function getLatestRunTriageSummary(summaryLength = 'SHORT') {
+  const params = new URLSearchParams({
+    summaryLength,
+  });
+
+  return fetchJson(`/test-runs/latest/summary/triage?${params.toString()}`);
+}
+
 export function getTestHistory(testClassName, testMethodName, limit = 10) {
   const params = new URLSearchParams({
     testClassName,

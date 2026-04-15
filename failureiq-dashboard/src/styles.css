@@ -170,6 +170,130 @@ a {
   padding: 24px;
 }
 
+.summary-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.summary-inline-state {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #475569;
+}
+
+.summary-inline-state p {
+  margin: 0;
+}
+
+.summary-inline-error {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.summary-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.summary-source-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.summary-source-ai {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.summary-source-fallback {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.summary-source-detail,
+.summary-meta-text {
+  color: #64748b;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.summary-copy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.summary-copy-single {
+  display: grid;
+}
+
+.summary-copy-card,
+.summary-highlight-card {
+  border: 1px solid #e2e8f0;
+  background: rgba(248, 250, 252, 0.95);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.summary-copy-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.summary-copy-header h4,
+.summary-highlight-card h4 {
+  margin: 0;
+}
+
+.summary-copy-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.summary-copy-text {
+  margin: 0;
+  color: #1f2937;
+  line-height: 1.7;
+}
+
+.summary-highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.summary-highlight-card p {
+  margin: 8px 0 0;
+  color: #64748b;
+}
+
+.summary-highlight-danger {
+  border-color: rgba(239, 68, 68, 0.18);
+}
+
+.summary-highlight-success {
+  border-color: rgba(34, 197, 94, 0.18);
+}
+
 .metric-card-success {
   border-color: rgba(34, 197, 94, 0.18);
 }
@@ -823,7 +947,8 @@ a {
   }
 
   .comparison-run-grid,
-  .insights-grid {
+  .insights-grid,
+  .summary-copy-grid {
     grid-template-columns: 1fr;
   }
 

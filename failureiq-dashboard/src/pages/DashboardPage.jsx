@@ -9,6 +9,7 @@ import LoadingState from '../components/LoadingState';
 import NewFailuresList from '../components/NewFailuresList';
 import PageHeader from '../components/PageHeader';
 import RecentRunsTable from '../components/RecentRunsTable';
+import RunSummaryPanel from '../components/RunSummaryPanel';
 import SummaryCard from '../components/SummaryCard';
 import TrendChart from '../components/TrendChart';
 import {
@@ -150,6 +151,7 @@ function DashboardPage() {
       </div>
 
       <ComparisonSummary comparison={comparison} />
+      <RunSummaryPanel latest variant="compact" />
       <section className="card table-panel" data-testid="run-diff-entry-panel">
         <div className="panel-header">
           <div>

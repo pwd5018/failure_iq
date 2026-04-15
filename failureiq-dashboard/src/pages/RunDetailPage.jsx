@@ -6,6 +6,7 @@ import FailedTestsList from '../components/FailedTestsList';
 import FailureClustersPanel from '../components/FailureClustersPanel';
 import LoadingState from '../components/LoadingState';
 import PageHeader from '../components/PageHeader';
+import RunSummaryPanel from '../components/RunSummaryPanel';
 import SummaryCard from '../components/SummaryCard';
 import StatusBadge from '../components/StatusBadge';
 import { getFailureClustersForRun, getTestRunById } from '../utils/api';
@@ -88,6 +89,8 @@ function RunDetailPage() {
           testId="run-skipped-summary"
         />
       </div>
+
+      <RunSummaryPanel runId={id} variant="full" />
 
       {failedTests.length > 0 ? (
         <FailedTestsList failedTests={failedTests} />
