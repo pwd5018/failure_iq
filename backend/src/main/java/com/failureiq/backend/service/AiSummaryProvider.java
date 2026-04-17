@@ -9,6 +9,10 @@ public interface AiSummaryProvider {
 
     String getProviderName();
 
+    default boolean supportsProvider(String configuredProvider) {
+        return getProviderName().equalsIgnoreCase(configuredProvider);
+    }
+
     boolean isAvailable();
 
     String generateSummary(RunSummaryContextDto summaryContext, SummaryType summaryType, SummaryLength summaryLength);

@@ -61,6 +61,22 @@ public class ProfileDrivenQualityTests extends BaseTest {
         }
     }
 
+    @Test(description = "Timing profile checks whether the settings save toast appears after auto-refresh changes inside a strict window")
+    public void autoRefreshSaveToastWithinStrictSlaTest() {
+        loginAsValidUser();
+        SettingsPage settingsPage = new DashboardPage(driver).goToSettingsPage();
+        settingsPage.toggleAutoRefresh().clickSave();
+
+        if (getScenarioProfile().isTimingStress()) {
+            settingsPage.waitForSuccessToastOrThrow(Duration.ofMillis(200));
+        } else {
+            Assert.assertTrue(
+                    settingsPage.waitForSuccessToastWithin(Duration.ofSeconds(2)),
+                    "The save confirmation toast should appear inside the normal wait window."
+            );
+        }
+    }
+
     @Test(description = "UI regression profile checks whether a legacy users delete locator still works")
     public void legacyUsersDeleteLocatorCompatibilityTest() {
         loginAsValidUser();
@@ -98,6 +114,19 @@ public class ProfileDrivenQualityTests extends BaseTest {
         } else {
             settingsPage.clickSave();
             Assert.assertTrue(settingsPage.waitForSuccessToastWithin(Duration.ofSeconds(2)));
+        }
+    }
+
+    @Test(description = "UI regression profile checks whether a legacy users role filter locator still works")
+    public void legacyUsersRoleFilterLocatorCompatibilityTest() {
+        loginAsValidUser();
+        UsersPage usersPage = new DashboardPage(driver).goToUsersPage();
+
+        if (getScenarioProfile().isUiRegression()) {
+            driver.findElement(By.cssSelector("[data-test='users-role-filter']")).click();
+        } else {
+            usersPage.filterByRole("Viewer");
+            Assert.assertEquals(usersPage.getVisibleUserCount(), 2);
         }
     }
 
@@ -148,6 +177,23 @@ public class ProfileDrivenQualityTests extends BaseTest {
             );
         } else {
             Assert.assertEquals(ordersPage.getFirstVisibleAmountText(), "$2040.00");
+        }
+    }
+
+    @Test(description = "Release candidate profile uses a stricter contract for search results on a known user")
+    public void userSearchContractTest() {
+        loginAsValidUser();
+        UsersPage usersPage = new DashboardPage(driver).goToUsersPage();
+        usersPage.searchForUser("Olivia");
+
+        if (getScenarioProfile().isReleaseCandidate()) {
+            Assert.assertEquals(
+                    usersPage.getVisibleUserCount(),
+                    2,
+                    "Release candidate profile expects an additional Olivia record in the directory."
+            );
+        } else {
+            Assert.assertEquals(usersPage.getVisibleUserCount(), 1);
         }
     }
 }

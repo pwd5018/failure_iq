@@ -23,14 +23,26 @@ public class DefaultSummaryPromptBuilder implements SummaryPromptBuilder {
     public String buildPrompt(RunSummaryContextDto summaryContext, SummaryType summaryType, SummaryLength summaryLength) {
         StringBuilder prompt = new StringBuilder();
 
-        prompt.append("You are summarizing a software test run for a QA dashboard.\n");
-        prompt.append("Use only the provided structured data.\n");
-        prompt.append("Do not invent causes, impact, fixes, or context that are not present.\n");
-        prompt.append("Keep the tone calm, factual, and concise.\n");
-        prompt.append("Highlight regressions, major failure clusters, recurring problems, flaky tests, and priority issues.\n");
-        prompt.append("Avoid dramatic language.\n");
+        prompt.append("You are summarizing a software test run for a QA triage dashboard.\n");
+        prompt.append("Use only the provided structured data. Do not invent root causes, customer impact, fixes, owners, or certainty that the data does not support.\n");
+        prompt.append("Lead with the most important regression or risk. If there is no regression, lead with the current quality signal.\n");
+        prompt.append("Mention major failure clusters before minor one-off failures.\n");
+        prompt.append("Highlight newly failing tests and fixed tests when those counts are non-zero.\n");
+        prompt.append("Mention flaky tests only when flaky tests are listed below.\n");
+        prompt.append("Do not repeat the raw metric list in sentence form. Interpret the metrics for QA triage.\n");
+        prompt.append("Use careful wording such as 'suggests', 'points to', or 'may indicate' when evidence is not conclusive.\n");
+        prompt.append("Keep the tone calm, factual, concise, and practical.\n");
         prompt.append("Summary type: ").append(summaryType.name()).append("\n");
         prompt.append("Summary length: ").append(summaryLength.name()).append("\n\n");
+
+        prompt.append("Required output format:\n");
+        prompt.append("HEADLINE: one short sentence with the main triage takeaway.\n");
+        prompt.append("SUMMARY: two to four concise sentences. Avoid raw metric narration.\n");
+        prompt.append("TRIAGE:\n");
+        prompt.append("- First action-oriented bullet for QA triage.\n");
+        prompt.append("- Second action-oriented bullet if useful.\n");
+        prompt.append("- Third action-oriented bullet if useful.\n");
+        prompt.append("Do not include Markdown headings, JSON, or extra sections.\n\n");
 
         prompt.append("Run facts:\n");
         prompt.append("- Run ID: ").append(summaryContext.getRunId()).append("\n");
@@ -57,7 +69,7 @@ public class DefaultSummaryPromptBuilder implements SummaryPromptBuilder {
         appendPriorityIssues(prompt, summaryContext.getHighestPriorityIssues());
         appendNotableFailures(prompt, summaryContext.getNotableFailedTests());
 
-        prompt.append("\nReturn plain English only. Do not return JSON.");
+        prompt.append("\nRemember: stay grounded in the provided data and do not overstate impact.");
         return prompt.toString();
     }
 

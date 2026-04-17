@@ -145,7 +145,7 @@ public class FailureClusteringServiceImpl implements FailureClusteringService {
 
         return FailureClusterDto.builder()
                 .clusterId(buildClusterId(clusterKey))
-                .clusterLabel(buildClusterLabel(rootCauseCategory, featureArea, failureType, members.size()))
+                .clusterLabel(buildClusterLabel(firstMember, rootCauseCategory, featureArea, failureType, members.size()))
                 .likelyRootCauseCategory(rootCauseCategory)
                 .testCount(members.size())
                 .groupingReason(String.join(" ", reasonParts))
@@ -228,12 +228,27 @@ public class FailureClusteringServiceImpl implements FailureClusteringService {
         return "Unknown / mixed issue";
     }
 
-    private String buildClusterLabel(String rootCauseCategory, String featureArea, String failureType, int memberCount) {
+    private String buildClusterLabel(
+            TestCaseResult firstMember,
+            String rootCauseCategory,
+            String featureArea,
+            String failureType,
+            int memberCount
+    ) {
         String areaLabel = featureArea.isBlank() ? "General" : featureArea;
-        String typeLabel = failureType.isBlank() ? "Failure" : failureType;
+        String typeLabel = humanizeFailureType(failureType);
+        String hint = extractClusterHint(firstMember, rootCauseCategory);
 
         if (memberCount == 1) {
+            if (!hint.isBlank()) {
+                return areaLabel + " " + typeLabel + ": " + hint;
+            }
+
             return areaLabel + " " + typeLabel + " Cluster";
+        }
+
+        if (!hint.isBlank()) {
+            return areaLabel + " " + typeLabel + ": " + hint;
         }
 
         return areaLabel + " " + rootCauseCategory + " Cluster";
@@ -333,6 +348,88 @@ public class FailureClusteringServiceImpl implements FailureClusteringService {
         }
 
         return Character.toUpperCase(firstWord.charAt(0)) + firstWord.substring(1);
+    }
+
+    private String extractClusterHint(TestCaseResult result, String rootCauseCategory) {
+        String methodName = deriveMethodName(result);
+        String errorMessage = valueOrEmpty(result.getErrorMessage()).toLowerCase(Locale.US);
+
+        if ("Assertion mismatch".equals(rootCauseCategory)) {
+            String methodHint = humanizeMethodHint(methodName);
+            if (!methodHint.isBlank()) {
+                return methodHint;
+            }
+
+            if (errorMessage.contains("expected [") && errorMessage.contains("but found [")) {
+                return "Expected vs actual mismatch";
+            }
+        }
+
+        if ("Locator / element issue".equals(rootCauseCategory)) {
+            if (errorMessage.contains("unable to locate element")) {
+                return "Element not found";
+            }
+
+            String methodHint = humanizeMethodHint(methodName);
+            if (!methodHint.isBlank()) {
+                return methodHint;
+            }
+        }
+
+        if ("Timeout / timing issue".equals(rootCauseCategory)) {
+            if (errorMessage.contains("expected condition")) {
+                return "Wait condition timed out";
+            }
+
+            String methodHint = humanizeMethodHint(methodName);
+            if (!methodHint.isBlank()) {
+                return methodHint;
+            }
+        }
+
+        if ("Click interception / UI overlap".equals(rootCauseCategory)) {
+            return "Click blocked by another element";
+        }
+
+        return humanizeMethodHint(methodName);
+    }
+
+    private String humanizeFailureType(String failureType) {
+        String value = valueOrEmpty(failureType);
+        if (value.isBlank()) {
+            return "Failure";
+        }
+
+        return value.replaceAll("([a-z])([A-Z])", "$1 $2").trim();
+    }
+
+    private String humanizeMethodHint(String methodName) {
+        String value = valueOrEmpty(methodName);
+        if (value.isBlank()) {
+            return "";
+        }
+
+        value = value.replace("Test", "")
+                .replace("WithinStrictSla", "")
+                .replace("Compatibility", "")
+                .replace("Contract", "")
+                .replace("Locator", "")
+                .replace("Legacy", "")
+                .replace("StillWorks", "")
+                .replaceAll("([a-z])([A-Z])", "$1 $2")
+                .trim()
+                .toLowerCase(Locale.US);
+
+        if (value.startsWith("should ")) {
+            value = value.substring("should ".length());
+        }
+
+        value = value.replaceAll("\\s+", " ").trim();
+        if (value.isBlank()) {
+            return "";
+        }
+
+        return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 
     private String normalizeErrorMessage(String errorMessage) {
