@@ -1,8 +1,5 @@
 package com.failureiq.backend.dto;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,40 +9,24 @@ import lombok.Setter;
 import java.util.ArrayList;
 import java.util.List;
 
-// This DTO is used when the client creates a new test run.
+// This DTO groups optional run-level metadata so the UI and summary layer can
+// use it without repeating many top-level fields everywhere.
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TestRunRequestDto {
-
-    @NotBlank(message = "Run name is required")
-    private String runName;
-
-    @NotBlank(message = "Triggered by is required")
-    private String triggeredBy;
+public class RunMetadataDto {
 
     private String browserName;
-
     private String browserVersion;
-
     private String environmentName;
-
     private String profileName;
-
     private String buildNumber;
-
     private String branchName;
-
     private String commitSha;
-
     private Double suiteDurationSeconds;
 
     @Builder.Default
     private List<String> runTags = new ArrayList<>();
-
-    @Valid
-    @NotEmpty(message = "At least one test case result is required")
-    private List<TestCaseResultRequestDto> testCaseResults;
 }

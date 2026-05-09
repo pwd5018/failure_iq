@@ -1,12 +1,18 @@
 package com.failureiq.backend.service.impl;
 
 import com.failureiq.backend.config.AiSummaryProperties;
+import com.failureiq.backend.dto.RunMetadataDto;
 import com.failureiq.backend.dto.RunSummaryContextDto;
 import com.failureiq.backend.dto.RunSummaryResponseDto;
 import com.failureiq.backend.dto.SummaryHighlightsDto;
 import com.failureiq.backend.dto.SummaryKeyMetricsDto;
 import com.failureiq.backend.dto.SummaryLength;
 import com.failureiq.backend.dto.SummaryType;
+import com.failureiq.backend.entity.RunSummaryRecord;
+import com.failureiq.backend.entity.TestRun;
+import com.failureiq.backend.exception.ResourceNotFoundException;
+import com.failureiq.backend.repository.RunSummaryRecordRepository;
+import com.failureiq.backend.repository.TestRunRepository;
 import com.failureiq.backend.service.AiSummaryProvider;
 import com.failureiq.backend.service.AiSummaryService;
 import com.failureiq.backend.service.RunSummaryContextService;
@@ -19,110 +25,223 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-// This service chooses the best available summary provider and always falls back
-// to the deterministic summary if AI is disabled, misconfigured, or unavailable.
+// This service chooses the best summary provider, persists generated summaries,
+// and falls back safely when AI is disabled or unavailable.
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Transactional
 @Slf4j
 public class AiSummaryServiceImpl implements AiSummaryService {
 
     private final AiSummaryProperties aiSummaryProperties;
     private final RunSummaryContextService runSummaryContextService;
+    private final TestRunRepository testRunRepository;
+    private final RunSummaryRecordRepository runSummaryRecordRepository;
     private final List<AiSummaryProvider> summaryProviders;
-    private final Map<String, RunSummaryResponseDto> summaryCache = new ConcurrentHashMap<>();
 
     @Override
-    public RunSummaryResponseDto generateRunSummary(Long runId, SummaryType summaryType, SummaryLength summaryLength) {
+    public RunSummaryResponseDto getRunSummary(Long runId, SummaryType summaryType, SummaryLength summaryLength) {
+        return getOrCreateRunSummary(runId, summaryType, summaryLength, false);
+    }
+
+    @Override
+    @Transactional
+    public RunSummaryResponseDto regenerateRunSummary(Long runId, SummaryType summaryType, SummaryLength summaryLength) {
+        return getOrCreateRunSummary(runId, summaryType, summaryLength, true);
+    }
+
+    @Override
+    public RunSummaryResponseDto getRunTriageSummary(Long runId, SummaryLength summaryLength) {
+        return getRunSummary(runId, SummaryType.TRIAGE, summaryLength);
+    }
+
+    @Override
+    @Transactional
+    public RunSummaryResponseDto regenerateRunTriageSummary(Long runId, SummaryLength summaryLength) {
+        return regenerateRunSummary(runId, SummaryType.TRIAGE, summaryLength);
+    }
+
+    @Override
+    public RunSummaryResponseDto getLatestRunSummary(SummaryType summaryType, SummaryLength summaryLength) {
+        return getRunSummary(getLatestRunId(), summaryType, summaryLength);
+    }
+
+    @Override
+    public RunSummaryResponseDto getLatestRunTriageSummary(SummaryLength summaryLength) {
+        return getLatestRunSummary(SummaryType.TRIAGE, summaryLength);
+    }
+
+    @Override
+    @Transactional
+    public RunSummaryResponseDto regenerateLatestRunSummary(SummaryType summaryType, SummaryLength summaryLength) {
+        return regenerateRunSummary(getLatestRunId(), summaryType, summaryLength);
+    }
+
+    @Override
+    @Transactional
+    public RunSummaryResponseDto regenerateLatestRunTriageSummary(SummaryLength summaryLength) {
+        return regenerateLatestRunSummary(SummaryType.TRIAGE, summaryLength);
+    }
+
+    @Override
+    public List<RunSummaryResponseDto> listRunSummaries(Long runId) {
         RunSummaryContextDto summaryContext = runSummaryContextService.getRunSummaryContext(runId);
-        return buildSummaryResponse(summaryContext, summaryType, summaryLength);
+
+        return runSummaryRecordRepository.findByTestRunIdOrderByGeneratedAtDesc(runId).stream()
+                .map(record -> mapRecordToResponse(record, summaryContext, true))
+                .toList();
     }
 
-    @Override
-    public RunSummaryResponseDto generateRunTriageSummary(Long runId, SummaryLength summaryLength) {
-        return generateRunSummary(runId, SummaryType.TRIAGE, summaryLength);
-    }
-
-    @Override
-    public RunSummaryResponseDto generateLatestRunSummary(SummaryType summaryType, SummaryLength summaryLength) {
-        RunSummaryContextDto summaryContext = runSummaryContextService.getLatestRunSummaryContext();
-        return buildSummaryResponse(summaryContext, summaryType, summaryLength);
-    }
-
-    @Override
-    public RunSummaryResponseDto generateLatestRunTriageSummary(SummaryLength summaryLength) {
-        return generateLatestRunSummary(SummaryType.TRIAGE, summaryLength);
-    }
-
-    private RunSummaryResponseDto buildSummaryResponse(
-            RunSummaryContextDto summaryContext,
+    private RunSummaryResponseDto getOrCreateRunSummary(
+            Long runId,
             SummaryType summaryType,
-            SummaryLength summaryLength
+            SummaryLength summaryLength,
+            boolean forceRegenerate
     ) {
-        String cacheKey = buildCacheKey(summaryContext.getRunId(), summaryType, summaryLength);
-        RunSummaryResponseDto cachedResponse = summaryCache.get(cacheKey);
-        if (cachedResponse != null) {
-            return cachedResponse;
+        RunSummaryContextDto summaryContext = runSummaryContextService.getRunSummaryContext(runId);
+        ProviderSelection providerSelection = resolveProviderSelection();
+
+        if (!forceRegenerate) {
+            RunSummaryResponseDto storedResponse = runSummaryRecordRepository
+                    .findTopByTestRunIdAndSummaryTypeAndSummaryLengthAndRequestedProviderAndProviderModelOrderByGeneratedAtDesc(
+                            runId,
+                            summaryType,
+                            summaryLength,
+                            providerSelection.requestedProvider(),
+                            providerSelection.providerModel()
+                    )
+                    .map(record -> mapRecordToResponse(record, summaryContext, true))
+                    .orElse(null);
+
+            if (storedResponse != null) {
+                return storedResponse;
+            }
         }
 
-        AiSummaryProvider fallbackProvider = findProvider("fallback");
-        AiSummaryProvider configuredProvider = findProvider(aiSummaryProperties.getNormalizedProvider());
+        return generateAndPersistSummary(runId, summaryContext, summaryType, summaryLength, providerSelection);
+    }
 
-        if (!aiSummaryProperties.isEnabled() || configuredProvider == null || !configuredProvider.isAvailable()) {
+    @Transactional
+    protected RunSummaryResponseDto generateAndPersistSummary(
+            Long runId,
+            RunSummaryContextDto summaryContext,
+            SummaryType summaryType,
+            SummaryLength summaryLength,
+            ProviderSelection providerSelection
+    ) {
+        SummaryBuildResult buildResult = buildSummary(summaryContext, summaryType, summaryLength, providerSelection);
+        TestRun run = testRunRepository.findById(runId)
+                .orElseThrow(() -> new ResourceNotFoundException("Test run not found with id: " + runId));
+
+        RunSummaryRecord record = RunSummaryRecord.builder()
+                .summaryType(summaryType)
+                .summaryLength(summaryLength)
+                .requestedProvider(providerSelection.requestedProvider())
+                .providerModel(providerSelection.providerModel())
+                .generatedBy(buildResult.response().getGeneratedBy())
+                .usedFallback(buildResult.response().isUsedFallback())
+                .generatedAt(buildResult.response().getGeneratedAt())
+                .headline(buildResult.response().getHeadline())
+                .shortSummary(buildResult.response().getShortSummary())
+                .summaryText(buildResult.response().getSummaryText())
+                .triageBullets(new ArrayList<>(buildResult.response().getTriageBullets()))
+                .testRun(run)
+                .build();
+
+        RunSummaryRecord savedRecord = runSummaryRecordRepository.save(record);
+        return mapRecordToResponse(savedRecord, summaryContext, false);
+    }
+
+    private SummaryBuildResult buildSummary(
+            RunSummaryContextDto summaryContext,
+            SummaryType summaryType,
+            SummaryLength summaryLength,
+            ProviderSelection providerSelection
+    ) {
+        AiSummaryProvider fallbackProvider = findProvider("fallback");
+        AiSummaryProvider configuredProvider = providerSelection.provider();
+
+        if (!providerSelection.aiActive() || configuredProvider == null || !configuredProvider.isAvailable()) {
             log.info(
                     "Using fallback summary for run {} because AI is disabled or provider {} is unavailable.",
                     summaryContext.getRunId(),
-                    aiSummaryProperties.getNormalizedProvider()
+                    providerSelection.requestedProvider()
             );
-            RunSummaryResponseDto response = buildResponse(summaryContext, summaryType, summaryLength, fallbackProvider, true);
-            summaryCache.put(cacheKey, response);
-            return response;
+            return buildResponse(summaryContext, summaryType, summaryLength, providerSelection, fallbackProvider, true);
         }
 
         try {
-            RunSummaryResponseDto response = buildResponse(summaryContext, summaryType, summaryLength, configuredProvider, false);
-            summaryCache.put(cacheKey, response);
-            return response;
+            return buildResponse(summaryContext, summaryType, summaryLength, providerSelection, configuredProvider, false);
         } catch (Exception exception) {
             log.warn(
                     "Falling back to deterministic summary for run {} after provider {} failed: {}",
                     summaryContext.getRunId(),
-                    aiSummaryProperties.getNormalizedProvider(),
+                    providerSelection.requestedProvider(),
                     exception.getMessage()
             );
-            RunSummaryResponseDto response = buildResponse(summaryContext, summaryType, summaryLength, fallbackProvider, true);
-            summaryCache.put(cacheKey, response);
-            return response;
+            return buildResponse(summaryContext, summaryType, summaryLength, providerSelection, fallbackProvider, true);
         }
     }
 
-    private RunSummaryResponseDto buildResponse(
+    private SummaryBuildResult buildResponse(
             RunSummaryContextDto summaryContext,
             SummaryType summaryType,
             SummaryLength summaryLength,
+            ProviderSelection providerSelection,
             AiSummaryProvider provider,
             boolean usedFallback
     ) {
         String rawSummaryText = provider.generateSummary(summaryContext, summaryType, summaryLength);
         ShapedSummary shapedSummary = shapeSummary(rawSummaryText, summaryContext);
 
-        return RunSummaryResponseDto.builder()
+        RunSummaryResponseDto response = RunSummaryResponseDto.builder()
                 .runId(summaryContext.getRunId())
                 .summaryType(summaryType)
                 .summaryLength(summaryLength)
-                .generatedBy(buildGeneratedBy(provider, usedFallback))
+                .requestedProvider(providerSelection.requestedProvider())
+                .providerModel(providerSelection.providerModel())
+                .generatedBy(buildGeneratedBy(providerSelection.requestedProvider(), usedFallback))
                 .generatedAt(LocalDateTime.now())
                 .aiEnabled(aiSummaryProperties.isEnabled())
                 .usedFallback(usedFallback)
+                .fromStoredRecord(false)
                 .summaryText(shapedSummary.summaryText())
                 .headline(shapedSummary.headline())
                 .shortSummary(shapedSummary.shortSummary())
                 .triageBullets(shapedSummary.triageBullets())
                 .structuredHighlights(buildHighlights(summaryContext))
                 .keyMetricsUsed(buildKeyMetrics(summaryContext))
+                .runMetadata(summaryContext.getRunMetadata())
+                .build();
+
+        return new SummaryBuildResult(response);
+    }
+
+    private RunSummaryResponseDto mapRecordToResponse(
+            RunSummaryRecord record,
+            RunSummaryContextDto summaryContext,
+            boolean fromStoredRecord
+    ) {
+        return RunSummaryResponseDto.builder()
+                .summaryRecordId(record.getId())
+                .runId(summaryContext.getRunId())
+                .summaryType(record.getSummaryType())
+                .summaryLength(record.getSummaryLength())
+                .requestedProvider(record.getRequestedProvider())
+                .providerModel(record.getProviderModel())
+                .generatedBy(record.getGeneratedBy())
+                .generatedAt(record.getGeneratedAt())
+                .aiEnabled(aiSummaryProperties.isEnabled())
+                .usedFallback(record.isUsedFallback())
+                .fromStoredRecord(fromStoredRecord)
+                .summaryText(record.getSummaryText())
+                .headline(record.getHeadline())
+                .shortSummary(record.getShortSummary())
+                .triageBullets(record.getTriageBullets())
+                .structuredHighlights(buildHighlights(summaryContext))
+                .keyMetricsUsed(buildKeyMetrics(summaryContext))
+                .runMetadata(summaryContext.getRunMetadata())
                 .build();
     }
 
@@ -246,6 +365,8 @@ public class AiSummaryServiceImpl implements AiSummaryService {
     }
 
     private SummaryKeyMetricsDto buildKeyMetrics(RunSummaryContextDto summaryContext) {
+        RunMetadataDto runMetadata = summaryContext.getRunMetadata();
+
         return SummaryKeyMetricsDto.builder()
                 .totalPassed(summaryContext.getTotalPassed())
                 .totalFailed(summaryContext.getTotalFailed())
@@ -256,26 +377,28 @@ public class AiSummaryServiceImpl implements AiSummaryService {
                 .screenshotsExistForFailedTests(summaryContext.isScreenshotsExistForFailedTests())
                 .failedTestsWithScreenshots(summaryContext.getFailedTestsWithScreenshots())
                 .failedTestsWithoutScreenshots(summaryContext.getFailedTestsWithoutScreenshots())
+                .environmentName(runMetadata == null ? null : runMetadata.getEnvironmentName())
+                .profileName(runMetadata == null ? null : runMetadata.getProfileName())
+                .suiteDurationSeconds(runMetadata == null ? null : runMetadata.getSuiteDurationSeconds())
                 .build();
     }
 
-    private String buildGeneratedBy(AiSummaryProvider provider, boolean usedFallback) {
+    private ProviderSelection resolveProviderSelection() {
+        String requestedProvider = aiSummaryProperties.isEnabled()
+                ? aiSummaryProperties.getNormalizedProvider()
+                : "fallback";
+        String providerModel = aiSummaryProperties.getModel();
+        AiSummaryProvider provider = findProvider(requestedProvider);
+
+        return new ProviderSelection(aiSummaryProperties.isEnabled(), requestedProvider, providerModel, provider);
+    }
+
+    private String buildGeneratedBy(String requestedProvider, boolean usedFallback) {
         if (usedFallback) {
             return "fallback";
         }
 
-        return "ai:" + aiSummaryProperties.getNormalizedProvider();
-    }
-
-    private String buildCacheKey(Long runId, SummaryType summaryType, SummaryLength summaryLength) {
-        return runId
-                + "|" + summaryType.name()
-                + "|" + summaryLength.name()
-                + "|" + aiSummaryProperties.isEnabled()
-                + "|" + aiSummaryProperties.getNormalizedProvider()
-                + "|" + aiSummaryProperties.getModel()
-                + "|" + aiSummaryProperties.getResolvedBaseUrl()
-                + "|" + aiSummaryProperties.getSummaryStyle();
+        return "ai:" + requestedProvider;
     }
 
     private AiSummaryProvider findProvider(String providerName) {
@@ -283,6 +406,23 @@ public class AiSummaryServiceImpl implements AiSummaryService {
                 .filter(provider -> provider.supportsProvider(providerName))
                 .findFirst()
                 .orElse(null);
+    }
+
+    private Long getLatestRunId() {
+        return testRunRepository.findTopByOrderByCreatedAtDesc()
+                .map(TestRun::getId)
+                .orElseThrow(() -> new ResourceNotFoundException("No test runs are available yet."));
+    }
+
+    private record ProviderSelection(
+            boolean aiActive,
+            String requestedProvider,
+            String providerModel,
+            AiSummaryProvider provider
+    ) {
+    }
+
+    private record SummaryBuildResult(RunSummaryResponseDto response) {
     }
 
     private record ShapedSummary(

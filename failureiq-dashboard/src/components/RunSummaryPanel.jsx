@@ -1,16 +1,28 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   getLatestRunSummary,
-  getLatestRunTriageSummary,
   getRunSummary,
-  getRunTriageSummary,
+  regenerateLatestRunSummary,
+  regenerateRunSummary,
 } from '../utils/api';
 import { formatDateTime, formatPercentage } from '../utils/runHelpers';
 
+const SUMMARY_TYPE_OPTIONS = [
+  { value: 'EXECUTIVE', label: 'Executive' },
+  { value: 'TRIAGE', label: 'Triage' },
+];
+
+const SUMMARY_LENGTH_OPTIONS = [
+  { value: 'SHORT', label: 'Short' },
+  { value: 'LONG', label: 'Long' },
+];
+
 function RunSummaryPanel({ runId, latest = false, variant = 'full' }) {
-  const [executiveSummary, setExecutiveSummary] = useState(null);
-  const [triageSummary, setTriageSummary] = useState(null);
+  const [summaryType, setSummaryType] = useState('EXECUTIVE');
+  const [summaryLength, setSummaryLength] = useState('SHORT');
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [regenerating, setRegenerating] = useState(false);
   const [error, setError] = useState('');
 
   const loadSummary = useCallback(async () => {
@@ -18,41 +30,52 @@ function RunSummaryPanel({ runId, latest = false, variant = 'full' }) {
       setLoading(true);
       setError('');
 
-      if (latest) {
-        const executiveResponse = await getLatestRunSummary('EXECUTIVE', variant === 'compact' ? 'SHORT' : 'LONG');
-        setExecutiveSummary(executiveResponse);
+      const response = latest
+        ? await getLatestRunSummary(summaryType, summaryLength)
+        : await getRunSummary(runId, summaryType, summaryLength);
 
-        if (variant === 'full') {
-          const triageResponse = await getLatestRunTriageSummary('SHORT');
-          setTriageSummary(triageResponse);
-        } else {
-          setTriageSummary(null);
-        }
-      } else {
-        const executiveResponse = await getRunSummary(runId, 'EXECUTIVE', variant === 'compact' ? 'SHORT' : 'LONG');
-        setExecutiveSummary(executiveResponse);
-
-        if (variant === 'full') {
-          const triageResponse = await getRunTriageSummary(runId, 'SHORT');
-          setTriageSummary(triageResponse);
-        } else {
-          setTriageSummary(null);
-        }
-      }
+      setSummary(response);
     } catch (loadError) {
       setError(loadError.message);
     } finally {
       setLoading(false);
     }
-  }, [latest, runId, variant]);
+  }, [latest, runId, summaryLength, summaryType]);
+
+  const regenerateSummary = useCallback(async () => {
+    try {
+      setRegenerating(true);
+      setError('');
+
+      const response = latest
+        ? await regenerateLatestRunSummary(summaryType, summaryLength)
+        : await regenerateRunSummary(runId, summaryType, summaryLength);
+
+      setSummary(response);
+    } catch (loadError) {
+      setError(loadError.message);
+    } finally {
+      setRegenerating(false);
+    }
+  }, [latest, runId, summaryLength, summaryType]);
 
   useEffect(() => {
     loadSummary();
   }, [loadSummary]);
 
-  const summaryToInspect = executiveSummary || triageSummary;
-  const highlights = summaryToInspect?.structuredHighlights;
-  const keyMetrics = summaryToInspect?.keyMetricsUsed;
+  const highlights = summary?.structuredHighlights;
+  const keyMetrics = summary?.keyMetricsUsed;
+  const summarySourceLabel = useMemo(() => {
+    if (!summary) {
+      return '';
+    }
+
+    if (summary.usedFallback) {
+      return 'Deterministic Fallback';
+    }
+
+    return 'AI Summary';
+  }, [summary]);
 
   return (
     <section className="card table-panel summary-panel" data-testid={latest ? 'latest-run-summary-panel' : 'run-summary-panel'}>
@@ -61,24 +84,68 @@ function RunSummaryPanel({ runId, latest = false, variant = 'full' }) {
           <h3>{latest ? 'Latest Run Summary' : 'Run Summary'}</h3>
           <p>
             {latest
-              ? 'A quick, investigation-friendly summary of the newest run in FailureIQ.'
-              : 'Readable run summaries generated from the structured run analysis context.'}
+              ? 'A saved or freshly generated summary for the newest run in FailureIQ.'
+              : 'A saved or freshly generated summary for this run, with controls for triage style and depth.'}
           </p>
         </div>
-        <button
-          type="button"
-          className="secondary-button"
-          onClick={loadSummary}
-          data-testid={latest ? 'refresh-latest-summary' : 'refresh-run-summary'}
-        >
-          Refresh Summary
-        </button>
+        <div className="summary-actions">
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={loadSummary}
+            disabled={loading || regenerating}
+            data-testid={latest ? 'reload-latest-summary' : 'reload-run-summary'}
+          >
+            Reload Saved
+          </button>
+          <button
+            type="button"
+            className="secondary-button"
+            onClick={regenerateSummary}
+            disabled={loading || regenerating}
+            data-testid={latest ? 'regenerate-latest-summary' : 'regenerate-run-summary'}
+          >
+            {regenerating ? 'Regenerating...' : 'Regenerate'}
+          </button>
+        </div>
+      </div>
+
+      <div className="summary-controls">
+        <div className="field-group compact-field">
+          <label htmlFor={latest ? 'latest-summary-type' : 'run-summary-type'}>Summary Type</label>
+          <select
+            id={latest ? 'latest-summary-type' : 'run-summary-type'}
+            value={summaryType}
+            onChange={(event) => setSummaryType(event.target.value)}
+          >
+            {SUMMARY_TYPE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="field-group compact-field">
+          <label htmlFor={latest ? 'latest-summary-length' : 'run-summary-length'}>Summary Length</label>
+          <select
+            id={latest ? 'latest-summary-length' : 'run-summary-length'}
+            value={summaryLength}
+            onChange={(event) => setSummaryLength(event.target.value)}
+          >
+            {SUMMARY_LENGTH_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {loading ? (
         <div className="summary-inline-state" data-testid="summary-loading">
           <div className="spinner" aria-hidden="true" />
-          <p>Loading summaries...</p>
+          <p>Loading summary...</p>
         </div>
       ) : null}
 
@@ -91,24 +158,39 @@ function RunSummaryPanel({ runId, latest = false, variant = 'full' }) {
         </div>
       ) : null}
 
-      {!loading && !error && executiveSummary ? (
+      {!loading && !error && summary ? (
         <>
           <div className="summary-meta-row">
-            <SummarySourcePill summary={executiveSummary} />
-            <span className="summary-meta-text">Generated {formatDateTime(executiveSummary.generatedAt)}</span>
+            <SummarySourcePill summary={summary} />
+            <span className="summary-meta-text">Generated {formatDateTime(summary.generatedAt)}</span>
             <span className="summary-meta-text">
-              {keyMetrics?.screenshotsExistForFailedTests
-                ? `${keyMetrics.failedTestsWithScreenshots} failed tests include screenshots`
-                : 'No failed-test screenshots were included'}
+              {summary.fromStoredRecord ? 'Loaded from saved summary history' : 'Freshly generated for this request'}
             </span>
           </div>
 
-          <div className={variant === 'full' ? 'summary-copy-grid' : 'summary-copy-single'}>
-            <SummaryBlock title="Executive Summary" summary={executiveSummary} />
-            {variant === 'full' && triageSummary ? (
-              <SummaryBlock title="Triage Summary" summary={triageSummary} />
+          <article className="summary-copy-card">
+            <div className="summary-copy-header">
+              <div>
+                <h4>{summary.headline || `${summarySourceLabel} Headline`}</h4>
+                <p className="summary-sub-label">
+                  {summary.summaryType} {summary.summaryLength} summary via {summary.generatedBy}
+                </p>
+              </div>
+              <span className="summary-copy-label">
+                {summary.usedFallback ? 'Fallback' : 'AI'}
+              </span>
+            </div>
+
+            <p className="summary-copy-text">{summary.shortSummary || summary.summaryText}</p>
+
+            {summary.triageBullets?.length > 0 ? (
+              <ul className="summary-bullet-list">
+                {summary.triageBullets.map((bullet) => (
+                  <li key={bullet}>{bullet}</li>
+                ))}
+              </ul>
             ) : null}
-          </div>
+          </article>
 
           {highlights ? (
             <div className="summary-highlights-grid">
@@ -145,23 +227,36 @@ function RunSummaryPanel({ runId, latest = false, variant = 'full' }) {
               />
             </div>
           ) : null}
+
+          {variant === 'full' && summary.runMetadata ? (
+            <div className="summary-metadata-grid">
+              <MetadataRow label="Environment" value={summary.runMetadata.environmentName} />
+              <MetadataRow label="Profile" value={summary.runMetadata.profileName} />
+              <MetadataRow
+                label="Browser"
+                value={buildBrowserLabel(summary.runMetadata.browserName, summary.runMetadata.browserVersion)}
+              />
+              <MetadataRow label="Build" value={summary.runMetadata.buildNumber} />
+              <MetadataRow label="Branch" value={summary.runMetadata.branchName} />
+              <MetadataRow label="Commit" value={summary.runMetadata.commitSha} />
+              <MetadataRow label="Suite Duration" value={formatDuration(summary.runMetadata.suiteDurationSeconds)} />
+              <MetadataRow
+                label="Tags"
+                value={summary.runMetadata.runTags?.length > 0 ? summary.runMetadata.runTags.join(', ') : 'Not provided'}
+              />
+            </div>
+          ) : null}
+
+          {keyMetrics ? (
+            <p className="summary-footnote">
+              {keyMetrics.screenshotsExistForFailedTests
+                ? `${keyMetrics.failedTestsWithScreenshots} failed tests include screenshots.`
+                : 'No failed-test screenshots were included for this run.'}
+            </p>
+          ) : null}
         </>
       ) : null}
     </section>
-  );
-}
-
-function SummaryBlock({ title, summary }) {
-  return (
-    <article className="summary-copy-card">
-      <div className="summary-copy-header">
-        <h4>{title}</h4>
-        <span className="summary-copy-label">
-          {summary.usedFallback ? 'Fallback' : 'AI'}
-        </span>
-      </div>
-      <p className="summary-copy-text">{summary.summaryText}</p>
-    </article>
   );
 }
 
@@ -182,6 +277,35 @@ function HighlightCard({ label, value, helperText, tone = 'default' }) {
       <p>{helperText}</p>
     </article>
   );
+}
+
+function MetadataRow({ label, value }) {
+  return (
+    <div className="summary-metadata-row">
+      <span>{label}</span>
+      <strong>{value || 'Not provided'}</strong>
+    </div>
+  );
+}
+
+function buildBrowserLabel(browserName, browserVersion) {
+  if (!browserName) {
+    return 'Not provided';
+  }
+
+  if (!browserVersion) {
+    return browserName;
+  }
+
+  return `${browserName} ${browserVersion}`;
+}
+
+function formatDuration(value) {
+  if (value === null || value === undefined || value === '') {
+    return 'Not provided';
+  }
+
+  return `${value} seconds`;
 }
 
 export default RunSummaryPanel;

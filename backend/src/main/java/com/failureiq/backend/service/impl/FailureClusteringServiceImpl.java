@@ -1,14 +1,18 @@
 package com.failureiq.backend.service.impl;
 
 import com.failureiq.backend.dto.FailureClusterDto;
+import com.failureiq.backend.dto.FailureClusterHistoryMemberDto;
+import com.failureiq.backend.dto.FailureClusterHistoryResponseDto;
 import com.failureiq.backend.dto.FailureClusterMemberDto;
 import com.failureiq.backend.dto.RunFailureClustersResponseDto;
+import com.failureiq.backend.dto.TestHistoryResponseDto;
 import com.failureiq.backend.entity.TestCaseResult;
 import com.failureiq.backend.entity.TestRun;
 import com.failureiq.backend.enums.TestStatus;
 import com.failureiq.backend.exception.ResourceNotFoundException;
 import com.failureiq.backend.repository.TestRunRepository;
 import com.failureiq.backend.service.FailureClusteringService;
+import com.failureiq.backend.service.HistoricalIntelligenceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +38,7 @@ public class FailureClusteringServiceImpl implements FailureClusteringService {
     private static final Pattern LOCATOR_PATTERN = Pattern.compile("\\{[^}]*}|\\[[^\\]]*]");
 
     private final TestRunRepository testRunRepository;
+    private final HistoricalIntelligenceService historicalIntelligenceService;
 
     @Override
     public RunFailureClustersResponseDto getFailureClustersForRun(Long runId) {
@@ -56,6 +61,78 @@ public class FailureClusteringServiceImpl implements FailureClusteringService {
         }
 
         return buildClusterResponse(latestRun.get());
+    }
+
+    @Override
+    public FailureClusterHistoryResponseDto getFailureClusterHistoryForRun(Long runId, String clusterId) {
+        RunFailureClustersResponseDto clusterResponse = getFailureClustersForRun(runId);
+        FailureClusterDto targetCluster = clusterResponse.getClusters().stream()
+                .filter(cluster -> cluster.getClusterId().equals(clusterId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Failure cluster not found with id: " + clusterId));
+
+        List<TestHistoryResponseDto> memberHistories = targetCluster.getMemberTests().stream()
+                .map(member -> historicalIntelligenceService.getTestHistory(
+                        member.getTestClassName(),
+                        member.getTestMethodName(),
+                        10
+                ))
+                .toList();
+
+        long recentAppearanceCount = memberHistories.stream()
+                .flatMap(history -> history.getHistoryEntries().stream())
+                .filter(entry -> "FAILED".equals(entry.getStatus()))
+                .map(entry -> entry.getRunId())
+                .distinct()
+                .count();
+
+        LocalDateTime firstSeenAt = memberHistories.stream()
+                .flatMap(history -> history.getHistoryEntries().stream())
+                .filter(entry -> "FAILED".equals(entry.getStatus()))
+                .map(entry -> entry.getExecutionTimestamp())
+                .filter(value -> value != null)
+                .min(Comparator.naturalOrder())
+                .orElse(null);
+
+        LocalDateTime lastSeenAt = memberHistories.stream()
+                .flatMap(history -> history.getHistoryEntries().stream())
+                .filter(entry -> "FAILED".equals(entry.getStatus()))
+                .map(entry -> entry.getExecutionTimestamp())
+                .filter(value -> value != null)
+                .max(Comparator.naturalOrder())
+                .orElse(null);
+
+        List<FailureClusterHistoryMemberDto> members = new ArrayList<>();
+        for (int index = 0; index < targetCluster.getMemberTests().size(); index++) {
+            FailureClusterMemberDto clusterMember = targetCluster.getMemberTests().get(index);
+            TestHistoryResponseDto history = memberHistories.get(index);
+
+            members.add(FailureClusterHistoryMemberDto.builder()
+                    .testResultId(clusterMember.getId())
+                    .testName(clusterMember.getTestName())
+                    .testClassName(clusterMember.getTestClassName())
+                    .testMethodName(clusterMember.getTestMethodName())
+                    .currentFailureType(clusterMember.getFailureType())
+                    .currentErrorMessage(clusterMember.getErrorMessage())
+                    .recentFailureCount(history.getFailCount())
+                    .flakyScore(history.getFlakyScore())
+                    .currentStatus(history.getCurrentStatus())
+                    .lastFailedTimestamp(history.getLastFailedTimestamp())
+                    .build());
+        }
+
+        return FailureClusterHistoryResponseDto.builder()
+                .runId(clusterResponse.getRunId())
+                .clusterId(targetCluster.getClusterId())
+                .clusterLabel(targetCluster.getClusterLabel())
+                .likelyRootCauseCategory(targetCluster.getLikelyRootCauseCategory())
+                .groupingReason(targetCluster.getGroupingReason())
+                .memberCount(targetCluster.getTestCount())
+                .recentAppearanceCount(recentAppearanceCount)
+                .firstSeenAt(firstSeenAt)
+                .lastSeenAt(lastSeenAt)
+                .memberTests(members)
+                .build();
     }
 
     private RunFailureClustersResponseDto buildClusterResponse(TestRun run) {

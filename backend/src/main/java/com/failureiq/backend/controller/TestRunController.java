@@ -1,13 +1,16 @@
 package com.failureiq.backend.controller;
 
 import com.failureiq.backend.dto.RunFailureClustersResponseDto;
+import com.failureiq.backend.dto.FailureClusterHistoryResponseDto;
 import com.failureiq.backend.dto.RunDiffResponseDto;
 import com.failureiq.backend.dto.RunSummaryResponseDto;
+import com.failureiq.backend.dto.TriageAssistantResponseDto;
 import com.failureiq.backend.dto.SummaryLength;
 import com.failureiq.backend.dto.SummaryType;
 import com.failureiq.backend.dto.TestRunRequestDto;
 import com.failureiq.backend.dto.TestRunResponseDto;
 import com.failureiq.backend.service.AiSummaryService;
+import com.failureiq.backend.service.AiTriageAssistantService;
 import com.failureiq.backend.service.FailureClusteringService;
 import com.failureiq.backend.service.RunSummaryContextService;
 import com.failureiq.backend.service.RunDiffService;
@@ -38,6 +41,7 @@ public class TestRunController {
     private final RunDiffService runDiffService;
     private final RunSummaryContextService runSummaryContextService;
     private final AiSummaryService aiSummaryService;
+    private final AiTriageAssistantService aiTriageAssistantService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -60,9 +64,27 @@ public class TestRunController {
         return failureClusteringService.getFailureClustersForRun(id);
     }
 
+    @GetMapping("/{id}/failure-clusters/{clusterId}/history")
+    public FailureClusterHistoryResponseDto getFailureClusterHistoryForRun(
+            @PathVariable Long id,
+            @PathVariable String clusterId
+    ) {
+        return failureClusteringService.getFailureClusterHistoryForRun(id, clusterId);
+    }
+
     @GetMapping("/{id}/summary-context")
     public RunSummaryContextDto getRunSummaryContext(@PathVariable Long id) {
         return runSummaryContextService.getRunSummaryContext(id);
+    }
+
+    @GetMapping("/{id}/triage-assistant")
+    public TriageAssistantResponseDto getRunTriageAssistant(@PathVariable Long id) {
+        return aiTriageAssistantService.getRunTriageAssistant(id);
+    }
+
+    @PostMapping("/{id}/triage-assistant/regenerate")
+    public TriageAssistantResponseDto regenerateRunTriageAssistant(@PathVariable Long id) {
+        return aiTriageAssistantService.regenerateRunTriageAssistant(id);
     }
 
     @GetMapping("/{id}/summary")
@@ -71,7 +93,21 @@ public class TestRunController {
             @RequestParam(defaultValue = "EXECUTIVE") SummaryType summaryType,
             @RequestParam(defaultValue = "SHORT") SummaryLength summaryLength
     ) {
-        return aiSummaryService.generateRunSummary(id, summaryType, summaryLength);
+        return aiSummaryService.getRunSummary(id, summaryType, summaryLength);
+    }
+
+    @PostMapping("/{id}/summary/regenerate")
+    public RunSummaryResponseDto regenerateRunSummary(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "EXECUTIVE") SummaryType summaryType,
+            @RequestParam(defaultValue = "SHORT") SummaryLength summaryLength
+    ) {
+        return aiSummaryService.regenerateRunSummary(id, summaryType, summaryLength);
+    }
+
+    @GetMapping("/{id}/summaries")
+    public List<RunSummaryResponseDto> listRunSummaries(@PathVariable Long id) {
+        return aiSummaryService.listRunSummaries(id);
     }
 
     @GetMapping("/{id}/summary/triage")
@@ -79,7 +115,15 @@ public class TestRunController {
             @PathVariable Long id,
             @RequestParam(defaultValue = "SHORT") SummaryLength summaryLength
     ) {
-        return aiSummaryService.generateRunTriageSummary(id, summaryLength);
+        return aiSummaryService.getRunTriageSummary(id, summaryLength);
+    }
+
+    @PostMapping("/{id}/summary/triage/regenerate")
+    public RunSummaryResponseDto regenerateRunTriageSummary(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "SHORT") SummaryLength summaryLength
+    ) {
+        return aiSummaryService.regenerateRunTriageSummary(id, summaryLength);
     }
 
     @GetMapping("/latest/summary")
@@ -87,14 +131,39 @@ public class TestRunController {
             @RequestParam(defaultValue = "EXECUTIVE") SummaryType summaryType,
             @RequestParam(defaultValue = "SHORT") SummaryLength summaryLength
     ) {
-        return aiSummaryService.generateLatestRunSummary(summaryType, summaryLength);
+        return aiSummaryService.getLatestRunSummary(summaryType, summaryLength);
     }
 
     @GetMapping("/latest/summary/triage")
     public RunSummaryResponseDto getLatestRunTriageSummary(
             @RequestParam(defaultValue = "SHORT") SummaryLength summaryLength
     ) {
-        return aiSummaryService.generateLatestRunTriageSummary(summaryLength);
+        return aiSummaryService.getLatestRunTriageSummary(summaryLength);
+    }
+
+    @GetMapping("/latest/triage-assistant")
+    public TriageAssistantResponseDto getLatestRunTriageAssistant() {
+        return aiTriageAssistantService.getLatestRunTriageAssistant();
+    }
+
+    @PostMapping("/latest/summary/regenerate")
+    public RunSummaryResponseDto regenerateLatestRunSummary(
+            @RequestParam(defaultValue = "EXECUTIVE") SummaryType summaryType,
+            @RequestParam(defaultValue = "SHORT") SummaryLength summaryLength
+    ) {
+        return aiSummaryService.regenerateLatestRunSummary(summaryType, summaryLength);
+    }
+
+    @PostMapping("/latest/summary/triage/regenerate")
+    public RunSummaryResponseDto regenerateLatestRunTriageSummary(
+            @RequestParam(defaultValue = "SHORT") SummaryLength summaryLength
+    ) {
+        return aiSummaryService.regenerateLatestRunTriageSummary(summaryLength);
+    }
+
+    @PostMapping("/latest/triage-assistant/regenerate")
+    public TriageAssistantResponseDto regenerateLatestRunTriageAssistant() {
+        return aiTriageAssistantService.regenerateLatestRunTriageAssistant();
     }
 
     @GetMapping("/compare")

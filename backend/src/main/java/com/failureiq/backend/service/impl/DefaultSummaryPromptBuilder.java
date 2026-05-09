@@ -5,6 +5,7 @@ import com.failureiq.backend.dto.FlakyTestDto;
 import com.failureiq.backend.dto.NotableFailedTestDto;
 import com.failureiq.backend.dto.PriorityIssueDto;
 import com.failureiq.backend.dto.RecurringFailureDto;
+import com.failureiq.backend.dto.RunMetadataDto;
 import com.failureiq.backend.dto.RunSummaryContextDto;
 import com.failureiq.backend.dto.SummaryClusterInsightDto;
 import com.failureiq.backend.dto.SummaryLength;
@@ -61,6 +62,7 @@ public class DefaultSummaryPromptBuilder implements SummaryPromptBuilder {
         prompt.append("- Still failing count: ").append(summaryContext.getStillFailingCount()).append("\n");
         prompt.append("- Failed tests with screenshots: ").append(summaryContext.getFailedTestsWithScreenshots()).append("\n");
         prompt.append("- Failed tests without screenshots: ").append(summaryContext.getFailedTestsWithoutScreenshots()).append("\n\n");
+        appendRunMetadata(prompt, summaryContext.getRunMetadata());
 
         appendClusters(prompt, summaryContext.getTopFailureClusters());
         appendRecurringFailures(prompt, summaryContext.getTopRecurringFailures());
@@ -71,6 +73,27 @@ public class DefaultSummaryPromptBuilder implements SummaryPromptBuilder {
 
         prompt.append("\nRemember: stay grounded in the provided data and do not overstate impact.");
         return prompt.toString();
+    }
+
+    private void appendRunMetadata(StringBuilder prompt, RunMetadataDto runMetadata) {
+        prompt.append("Run metadata:\n");
+        if (runMetadata == null) {
+            prompt.append("- None\n");
+            return;
+        }
+
+        prompt.append("- Environment: ").append(emptyToLabel(runMetadata.getEnvironmentName())).append("\n");
+        prompt.append("- Profile: ").append(emptyToLabel(runMetadata.getProfileName())).append("\n");
+        prompt.append("- Browser: ").append(buildBrowserLabel(runMetadata)).append("\n");
+        prompt.append("- Build number: ").append(emptyToLabel(runMetadata.getBuildNumber())).append("\n");
+        prompt.append("- Branch name: ").append(emptyToLabel(runMetadata.getBranchName())).append("\n");
+        prompt.append("- Commit SHA: ").append(emptyToLabel(runMetadata.getCommitSha())).append("\n");
+        prompt.append("- Suite duration seconds: ").append(runMetadata.getSuiteDurationSeconds()).append("\n");
+        prompt.append("- Tags: ").append(
+                runMetadata.getRunTags() == null || runMetadata.getRunTags().isEmpty()
+                        ? "None"
+                        : String.join(", ", runMetadata.getRunTags())
+        ).append("\n\n");
     }
 
     private void appendClusters(StringBuilder prompt, List<SummaryClusterInsightDto> clusters) {
@@ -175,5 +198,20 @@ public class DefaultSummaryPromptBuilder implements SummaryPromptBuilder {
                     .append(" | screenshot: ").append(failure.isScreenshotExists() ? "yes" : "no")
                     .append("\n");
         }
+    }
+
+    private String buildBrowserLabel(RunMetadataDto runMetadata) {
+        String browserName = emptyToLabel(runMetadata.getBrowserName());
+        String browserVersion = runMetadata.getBrowserVersion();
+
+        if (browserVersion == null || browserVersion.isBlank()) {
+            return browserName;
+        }
+
+        return browserName + " " + browserVersion;
+    }
+
+    private String emptyToLabel(String value) {
+        return value == null || value.isBlank() ? "Not provided" : value;
     }
 }

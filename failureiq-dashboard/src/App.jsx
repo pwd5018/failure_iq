@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import Layout from './components/Layout';
 import DashboardPage from './pages/DashboardPage';
+import ClusterHistoryPage from './pages/ClusterHistoryPage';
 import RunDiffPage from './pages/RunDiffPage';
 import RunDetailPage from './pages/RunDetailPage';
 import TestHistoryPage from './pages/TestHistoryPage';
@@ -15,6 +16,7 @@ function App() {
         <Route path="dashboard/run-diff" element={<RunDiffPage />} />
         <Route path="runs" element={<TestRunsPage />} />
         <Route path="runs/:id" element={<RunDetailPage />} />
+        <Route path="runs/:id/clusters/:clusterId" element={<ClusterHistoryPage />} />
         <Route path="tests/history" element={<TestHistoryPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

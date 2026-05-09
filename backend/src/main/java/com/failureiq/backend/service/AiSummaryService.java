@@ -6,11 +6,21 @@ import com.failureiq.backend.dto.SummaryType;
 
 public interface AiSummaryService {
 
-    RunSummaryResponseDto generateRunSummary(Long runId, SummaryType summaryType, SummaryLength summaryLength);
+    RunSummaryResponseDto getRunSummary(Long runId, SummaryType summaryType, SummaryLength summaryLength);
 
-    RunSummaryResponseDto generateRunTriageSummary(Long runId, SummaryLength summaryLength);
+    RunSummaryResponseDto regenerateRunSummary(Long runId, SummaryType summaryType, SummaryLength summaryLength);
 
-    RunSummaryResponseDto generateLatestRunSummary(SummaryType summaryType, SummaryLength summaryLength);
+    RunSummaryResponseDto getRunTriageSummary(Long runId, SummaryLength summaryLength);
 
-    RunSummaryResponseDto generateLatestRunTriageSummary(SummaryLength summaryLength);
+    RunSummaryResponseDto regenerateRunTriageSummary(Long runId, SummaryLength summaryLength);
+
+    RunSummaryResponseDto getLatestRunSummary(SummaryType summaryType, SummaryLength summaryLength);
+
+    RunSummaryResponseDto getLatestRunTriageSummary(SummaryLength summaryLength);
+
+    RunSummaryResponseDto regenerateLatestRunSummary(SummaryType summaryType, SummaryLength summaryLength);
+
+    RunSummaryResponseDto regenerateLatestRunTriageSummary(SummaryLength summaryLength);
+
+    java.util.List<RunSummaryResponseDto> listRunSummaries(Long runId);
 }

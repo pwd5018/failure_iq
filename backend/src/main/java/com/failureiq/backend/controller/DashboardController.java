@@ -68,6 +68,6 @@ public class DashboardController {
             @org.springframework.web.bind.annotation.RequestParam(defaultValue = "EXECUTIVE") SummaryType summaryType,
             @org.springframework.web.bind.annotation.RequestParam(defaultValue = "SHORT") SummaryLength summaryLength
     ) {
-        return aiSummaryService.generateLatestRunSummary(summaryType, summaryLength);
+        return aiSummaryService.getLatestRunSummary(summaryType, summaryLength);
     }
 }

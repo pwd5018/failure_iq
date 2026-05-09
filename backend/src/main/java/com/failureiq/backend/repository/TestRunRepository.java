@@ -14,6 +14,9 @@ public interface TestRunRepository extends JpaRepository<TestRun, Long> {
     @EntityGraph(attributePaths = "testCaseResults")
     List<TestRun> findAllByOrderByCreatedAtDesc();
 
+    @EntityGraph(attributePaths = "testCaseResults")
+    Optional<TestRun> findTopByOrderByCreatedAtDesc();
+
     @Override
     @EntityGraph(attributePaths = "testCaseResults")
     Optional<TestRun> findById(Long id);

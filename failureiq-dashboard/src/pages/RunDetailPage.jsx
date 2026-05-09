@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AiTriageAssistantPanel from '../components/AiTriageAssistantPanel';
 import { Link, useParams } from 'react-router-dom';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
@@ -91,6 +92,29 @@ function RunDetailPage() {
       </div>
 
       <RunSummaryPanel runId={id} variant="full" />
+      <AiTriageAssistantPanel runId={id} variant="full" />
+
+      <section className="card table-panel">
+        <div className="panel-header">
+          <div>
+            <h3>Run Metadata</h3>
+            <p>Extra run details that help explain environment, profile, and build context.</p>
+          </div>
+        </div>
+        <div className="summary-metadata-grid">
+          <MetadataRow label="Environment" value={run.environmentName} />
+          <MetadataRow label="Profile" value={run.profileName} />
+          <MetadataRow value={buildBrowserLabel(run.browserName, run.browserVersion)} label="Browser" />
+          <MetadataRow label="Build" value={run.buildNumber} />
+          <MetadataRow label="Branch" value={run.branchName} />
+          <MetadataRow label="Commit" value={run.commitSha} />
+          <MetadataRow
+            label="Suite Duration"
+            value={run.suiteDurationSeconds ? `${run.suiteDurationSeconds} seconds` : null}
+          />
+          <MetadataRow label="Tags" value={run.runTags?.length > 0 ? run.runTags.join(', ') : null} />
+        </div>
+      </section>
 
       {failedTests.length > 0 ? (
         <FailedTestsList failedTests={failedTests} />
@@ -155,6 +179,27 @@ function RunDetailPage() {
       </section>
     </div>
   );
+}
+
+function MetadataRow({ label, value }) {
+  return (
+    <div className="summary-metadata-row">
+      <span>{label}</span>
+      <strong>{value || 'Not provided'}</strong>
+    </div>
+  );
+}
+
+function buildBrowserLabel(browserName, browserVersion) {
+  if (!browserName) {
+    return null;
+  }
+
+  if (!browserVersion) {
+    return browserName;
+  }
+
+  return `${browserName} ${browserVersion}`;
 }
 
 export default RunDetailPage;

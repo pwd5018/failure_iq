@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // This service contains the main business logic for test run operations.
@@ -28,6 +29,15 @@ public class TestRunServiceImpl implements TestRunService {
         TestRun testRun = TestRun.builder()
                 .runName(requestDto.getRunName())
                 .triggeredBy(requestDto.getTriggeredBy())
+                .browserName(requestDto.getBrowserName())
+                .browserVersion(requestDto.getBrowserVersion())
+                .environmentName(requestDto.getEnvironmentName())
+                .profileName(requestDto.getProfileName())
+                .buildNumber(requestDto.getBuildNumber())
+                .branchName(requestDto.getBranchName())
+                .commitSha(requestDto.getCommitSha())
+                .suiteDurationSeconds(requestDto.getSuiteDurationSeconds())
+                .runTags(new ArrayList<>(requestDto.getRunTags()))
                 .build();
 
         // Convert each request DTO into an entity and connect it to the parent run.
@@ -95,6 +105,15 @@ public class TestRunServiceImpl implements TestRunService {
                 .id(entity.getId())
                 .runName(entity.getRunName())
                 .triggeredBy(entity.getTriggeredBy())
+                .browserName(entity.getBrowserName())
+                .browserVersion(entity.getBrowserVersion())
+                .environmentName(entity.getEnvironmentName())
+                .profileName(entity.getProfileName())
+                .buildNumber(entity.getBuildNumber())
+                .branchName(entity.getBranchName())
+                .commitSha(entity.getCommitSha())
+                .suiteDurationSeconds(entity.getSuiteDurationSeconds())
+                .runTags(new ArrayList<>(entity.getRunTags()))
                 .createdAt(entity.getCreatedAt())
                 .testCaseResults(entity.getTestCaseResults()
                         .stream()

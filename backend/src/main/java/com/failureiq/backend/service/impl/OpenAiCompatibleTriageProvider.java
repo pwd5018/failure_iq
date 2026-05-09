@@ -1,23 +1,22 @@
 package com.failureiq.backend.service.impl;
 
 import com.failureiq.backend.config.AiSummaryProperties;
-import com.failureiq.backend.dto.RunSummaryContextDto;
-import com.failureiq.backend.dto.SummaryLength;
-import com.failureiq.backend.dto.SummaryType;
-import com.failureiq.backend.service.AiSummaryProvider;
-import com.failureiq.backend.service.SummaryPromptBuilder;
+import com.failureiq.backend.dto.RunTriageContextDto;
+import com.failureiq.backend.dto.TriageRecommendationItemDto;
+import com.failureiq.backend.service.AiTriageProvider;
+import com.failureiq.backend.service.TriagePromptBuilder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-// This provider handles any OpenAI-compatible chat completions endpoint.
-// We use the same request path for Ollama, Groq, and other compatible APIs so
-// provider switching is driven by configuration only.
+import java.util.List;
+
+// This provider reuses the shared OpenAI-compatible request path for AI triage text.
 @Service
 @RequiredArgsConstructor
-public class OpenAiCompatibleSummaryProvider implements AiSummaryProvider {
+public class OpenAiCompatibleTriageProvider implements AiTriageProvider {
 
     private final AiSummaryProperties aiSummaryProperties;
-    private final SummaryPromptBuilder summaryPromptBuilder;
+    private final TriagePromptBuilder triagePromptBuilder;
     private final OpenAiCompatibleTextGenerationClient textGenerationClient;
 
     @Override
@@ -44,10 +43,10 @@ public class OpenAiCompatibleSummaryProvider implements AiSummaryProvider {
     }
 
     @Override
-    public String generateSummary(RunSummaryContextDto summaryContext, SummaryType summaryType, SummaryLength summaryLength) {
-        String prompt = summaryPromptBuilder.buildPrompt(summaryContext, summaryType, summaryLength);
+    public String generateTriageText(RunTriageContextDto triageContext, List<TriageRecommendationItemDto> rankedTargets) {
+        String prompt = triagePromptBuilder.buildPrompt(triageContext, rankedTargets);
         return textGenerationClient.generateText(
-                "You are a careful QA summary assistant. Stay grounded in the provided run data only.",
+                "You are a careful QA triage assistant. Stay grounded in the provided triage data only.",
                 prompt
         );
     }

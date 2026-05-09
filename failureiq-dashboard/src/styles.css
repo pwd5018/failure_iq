@@ -176,6 +176,14 @@ a {
   gap: 18px;
 }
 
+.summary-actions,
+.summary-controls,
+.cluster-member-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .summary-inline-state {
   display: flex;
   align-items: center;
@@ -257,6 +265,14 @@ a {
   margin: 0;
 }
 
+.summary-sub-label,
+.table-subtext,
+.summary-footnote {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
 .summary-copy-label {
   display: inline-flex;
   align-items: center;
@@ -275,10 +291,81 @@ a {
   line-height: 1.7;
 }
 
+.summary-bullet-list {
+  margin: 14px 0 0;
+  padding-left: 18px;
+  color: #334155;
+}
+
 .summary-highlights-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 16px;
+}
+
+.summary-metadata-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.summary-metadata-row {
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: rgba(248, 250, 252, 0.95);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summary-metadata-row span {
+  color: #64748b;
+  font-size: 0.88rem;
+}
+
+.triage-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.triage-fallback-note {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fef3c7;
+  color: #92400e;
+  font-weight: 600;
+}
+
+.triage-recommendation-list {
+  display: grid;
+  gap: 16px;
+}
+
+.triage-item-card {
+  border: 1px solid #e2e8f0;
+  background: rgba(248, 250, 252, 0.95);
+  border-radius: 16px;
+  padding: 18px;
+}
+
+.triage-item-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.triage-item-card h4 {
+  margin: 0 0 8px;
+}
+
+.triage-item-copy {
+  margin: 0;
+  color: #334155;
 }
 
 .summary-highlight-card p {

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import ScreenshotQuickViewButton from './ScreenshotQuickViewButton';
 
 function FailureClustersPanel({ clusterResponse }) {
@@ -44,7 +45,7 @@ function FailureClustersPanel({ clusterResponse }) {
             const isOpen = openClusterIds.includes(cluster.clusterId);
 
             return (
-              <article key={cluster.clusterId} className="cluster-card">
+              <article key={cluster.clusterId} className="cluster-card" id={cluster.clusterId}>
                 <button
                   type="button"
                   className="cluster-toggle"
@@ -65,6 +66,15 @@ function FailureClustersPanel({ clusterResponse }) {
                   <span className="cluster-pill">
                     Confidence {Math.round(cluster.confidenceScore * 100)}%
                   </span>
+                  {clusterResponse?.runId ? (
+                    <Link
+                      to={`/runs/${clusterResponse.runId}/clusters/${cluster.clusterId}`}
+                      className="table-link"
+                      data-testid={`cluster-history-link-${cluster.clusterId}`}
+                    >
+                      Investigate Cluster
+                    </Link>
+                  ) : null}
                 </div>
 
                 <p className="cluster-reason">{cluster.groupingReason}</p>
@@ -82,11 +92,19 @@ function FailureClustersPanel({ clusterResponse }) {
                           </div>
                         </div>
                         <pre className="failure-message">{member.errorMessage || 'No error message stored.'}</pre>
-                        <ScreenshotQuickViewButton
-                          testResultId={member.id}
-                          buttonLabel="View Screenshot"
-                          testId={`cluster-screenshot-${member.id}`}
-                        />
+                        <div className="cluster-member-actions">
+                          <Link
+                            to={`/tests/history?testClassName=${encodeURIComponent(member.testClassName)}&testMethodName=${encodeURIComponent(member.testMethodName)}`}
+                            className="table-link"
+                          >
+                            View History
+                          </Link>
+                          <ScreenshotQuickViewButton
+                            testResultId={member.id}
+                            buttonLabel="View Screenshot"
+                            testId={`cluster-screenshot-${member.id}`}
+                          />
+                        </div>
                       </article>
                     ))}
                   </div>

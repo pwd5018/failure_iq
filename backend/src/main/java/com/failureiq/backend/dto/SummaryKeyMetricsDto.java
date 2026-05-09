@@ -23,4 +23,7 @@ public class SummaryKeyMetricsDto {
     private boolean screenshotsExistForFailedTests;
     private long failedTestsWithScreenshots;
     private long failedTestsWithoutScreenshots;
+    private String environmentName;
+    private String profileName;
+    private Double suiteDurationSeconds;
 }

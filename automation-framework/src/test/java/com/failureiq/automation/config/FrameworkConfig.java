@@ -2,6 +2,8 @@ package com.failureiq.automation.config;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 // This class loads values from config.properties once and exposes simple getter methods.
@@ -78,4 +80,67 @@ public final class FrameworkConfig {
     }
 
     public static boolean headless = Boolean.parseBoolean(PROPERTIES.getProperty("headless", "false"));
+
+    public static String getBrowserVersion() {
+        return firstNonBlank(
+                System.getProperty("browser.version"),
+                System.getenv("BROWSER_VERSION"),
+                PROPERTIES.getProperty("browser.version", "")
+        );
+    }
+
+    public static String getEnvironmentName() {
+        return firstNonBlank(
+                System.getProperty("failureiq.environment"),
+                System.getenv("FAILUREIQ_ENVIRONMENT"),
+                PROPERTIES.getProperty("environment.name", "local")
+        );
+    }
+
+    public static String getBuildNumber() {
+        return firstNonBlank(
+                System.getProperty("build.number"),
+                System.getenv("BUILD_NUMBER"),
+                PROPERTIES.getProperty("build.number", "")
+        );
+    }
+
+    public static String getBranchName() {
+        return firstNonBlank(
+                System.getProperty("branch.name"),
+                System.getenv("GIT_BRANCH"),
+                PROPERTIES.getProperty("branch.name", "")
+        );
+    }
+
+    public static String getCommitSha() {
+        return firstNonBlank(
+                System.getProperty("commit.sha"),
+                System.getenv("GIT_COMMIT"),
+                PROPERTIES.getProperty("commit.sha", "")
+        );
+    }
+
+    public static List<String> getRunTags() {
+        String rawTags = PROPERTIES.getProperty("run.tags", "");
+        if (rawTags.isBlank()) {
+            return List.of(getScenarioProfile().getKey());
+        }
+
+        return Arrays.stream(rawTags.split(","))
+                .map(String::trim)
+                .filter(tag -> !tag.isBlank())
+                .distinct()
+                .toList();
+    }
+
+    private static String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+        }
+
+        return "";
+    }
 }

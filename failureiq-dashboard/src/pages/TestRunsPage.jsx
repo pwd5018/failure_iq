@@ -12,6 +12,7 @@ function TestRunsPage() {
   const [runs, setRuns] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [profileFilter, setProfileFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -37,14 +38,21 @@ function TestRunsPage() {
     return runs.filter((run) => {
       const matchesSearch =
         run.runName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        run.triggeredBy.toLowerCase().includes(searchTerm.toLowerCase());
+        run.triggeredBy.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (run.environmentName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (run.profileName || '').toLowerCase().includes(searchTerm.toLowerCase());
 
       const runStatus = run.failedCount > 0 ? 'FAILED' : 'PASSED';
       const matchesStatus = statusFilter === 'All' ? true : runStatus === statusFilter;
+      const matchesProfile = profileFilter === 'All' ? true : (run.profileName || 'Unknown') === profileFilter;
 
-      return matchesSearch && matchesStatus;
+      return matchesSearch && matchesStatus && matchesProfile;
     });
-  }, [runs, searchTerm, statusFilter]);
+  }, [runs, searchTerm, statusFilter, profileFilter]);
+
+  const profileOptions = useMemo(() => {
+    return ['All', ...new Set(runs.map((run) => run.profileName || 'Unknown'))];
+  }, [runs]);
 
   if (loading) {
     return <LoadingState message="Loading test runs..." testId="runs-loading" />;
@@ -94,6 +102,21 @@ function TestRunsPage() {
               <option value="FAILED">Failed Only</option>
             </select>
           </div>
+
+          <div className="field-group compact-field">
+            <label htmlFor="run-profile-filter">Profile</label>
+            <select
+              id="run-profile-filter"
+              value={profileFilter}
+              onChange={(event) => setProfileFilter(event.target.value)}
+            >
+              {profileOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {filteredRuns.length === 0 ? (
@@ -109,6 +132,9 @@ function TestRunsPage() {
                 <tr>
                   <th>Run Name</th>
                   <th>Triggered By</th>
+                  <th>Profile</th>
+                  <th>Environment</th>
+                  <th>Browser</th>
                   <th>Created</th>
                   <th>Passed</th>
                   <th>Failed</th>
@@ -122,6 +148,9 @@ function TestRunsPage() {
                   <tr key={run.id} className={run.failedCount > 0 ? 'failed-row' : ''}>
                     <td>{run.runName}</td>
                     <td>{run.triggeredBy}</td>
+                    <td>{run.profileName || 'Not provided'}</td>
+                    <td>{run.environmentName || 'Not provided'}</td>
+                    <td>{run.browserVersion ? `${run.browserName} ${run.browserVersion}` : run.browserName || 'Not provided'}</td>
                     <td>{formatDateTime(run.createdAt)}</td>
                     <td>{run.passedCount}</td>
                     <td className="failed-count-cell">{run.failedCount}</td>

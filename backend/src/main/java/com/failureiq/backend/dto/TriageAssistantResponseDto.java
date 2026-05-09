@@ -9,18 +9,16 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.List;
 
-// This DTO returns one generated summary plus a few details about how it was produced.
+// This DTO is the frontend-ready result for the AI Triage Assistant.
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RunSummaryResponseDto {
+public class TriageAssistantResponseDto {
 
-    private Long summaryRecordId;
+    private Long triageRecordId;
     private Long runId;
-    private SummaryType summaryType;
-    private SummaryLength summaryLength;
     private String requestedProvider;
     private String providerModel;
     private String generatedBy;
@@ -28,11 +26,9 @@ public class RunSummaryResponseDto {
     private boolean aiEnabled;
     private boolean usedFallback;
     private boolean fromStoredRecord;
-    private String summaryText;
     private String headline;
-    private String shortSummary;
-    private List<String> triageBullets;
-    private SummaryHighlightsDto structuredHighlights;
-    private SummaryKeyMetricsDto keyMetricsUsed;
-    private RunMetadataDto runMetadata;
+    private String overallRecommendation;
+    private List<TriageRecommendationItemDto> recommendedInvestigationOrder;
+    private List<String> topActions;
+    private List<String> evidence;
 }

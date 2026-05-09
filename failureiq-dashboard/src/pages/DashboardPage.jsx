@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import AiTriageAssistantPanel from '../components/AiTriageAssistantPanel';
 import { Link } from 'react-router-dom';
 import ClusterSummaryWidget from '../components/ClusterSummaryWidget';
 import ComparisonSummary from '../components/ComparisonSummary';
@@ -152,6 +153,7 @@ function DashboardPage() {
 
       <ComparisonSummary comparison={comparison} />
       <RunSummaryPanel latest variant="compact" />
+      <AiTriageAssistantPanel latest variant="compact" />
       <section className="card table-panel" data-testid="run-diff-entry-panel">
         <div className="panel-header">
           <div>

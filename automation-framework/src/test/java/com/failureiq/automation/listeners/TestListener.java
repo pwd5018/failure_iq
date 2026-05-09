@@ -46,6 +46,14 @@ public class TestListener implements ITestListener, ISuiteListener {
                 executionTimestamp
         ));
         runReport.setTriggeredBy("Local TestNG Framework - " + scenarioProfile.getDisplayName());
+        runReport.setBrowserName(FrameworkConfig.getBrowser());
+        runReport.setBrowserVersion(FrameworkConfig.getBrowserVersion());
+        runReport.setEnvironmentName(FrameworkConfig.getEnvironmentName());
+        runReport.setProfileName(scenarioProfile.getKey());
+        runReport.setBuildNumber(FrameworkConfig.getBuildNumber());
+        runReport.setBranchName(FrameworkConfig.getBranchName());
+        runReport.setCommitSha(FrameworkConfig.getCommitSha());
+        runReport.setRunTags(FrameworkConfig.getRunTags());
 
         screenshotFolder = Path.of(FrameworkConfig.getOutputFolder(), "screenshots", runId);
 
@@ -121,6 +129,7 @@ public class TestListener implements ITestListener, ISuiteListener {
         runReport.setTotalFailed(failedCount);
         runReport.setTotalSkipped(skippedCount);
         runReport.setTotalDurationSeconds(roundToTwoDecimals(totalDurationSeconds));
+        runReport.setSuiteDurationSeconds(roundToTwoDecimals(totalDurationSeconds));
         runReport.setTestCaseResults(testCaseEntries);
 
         String outputFilePath = FailureIqReportWriter.writeReport(runReport);

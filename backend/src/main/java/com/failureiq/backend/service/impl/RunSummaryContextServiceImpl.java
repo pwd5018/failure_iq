@@ -10,6 +10,7 @@ import com.failureiq.backend.dto.RunDeltaDto;
 import com.failureiq.backend.dto.RunDiffRecordDto;
 import com.failureiq.backend.dto.RunDiffResponseDto;
 import com.failureiq.backend.dto.RunFailureClustersResponseDto;
+import com.failureiq.backend.dto.RunMetadataDto;
 import com.failureiq.backend.dto.RunSummaryContextDto;
 import com.failureiq.backend.dto.SummaryClusterInsightDto;
 import com.failureiq.backend.entity.TestCaseResult;
@@ -102,6 +103,7 @@ public class RunSummaryContextServiceImpl implements RunSummaryContextService {
                 .newlyFailingCount(runDiff != null ? runDiff.getSummary().getNewlyFailing() : 0)
                 .fixedSinceLastRunCount(runDiff != null ? runDiff.getSummary().getFixedSinceLastRun() : 0)
                 .stillFailingCount(runDiff != null ? runDiff.getSummary().getStillFailing() : 0)
+                .runMetadata(mapRunMetadata(run))
                 .topFailureClusters(clusterResponse.getClusters().stream()
                         .limit(TOP_CLUSTER_LIMIT)
                         .map(this::mapToSummaryCluster)
@@ -132,6 +134,7 @@ public class RunSummaryContextServiceImpl implements RunSummaryContextService {
     @Override
     public String buildFallbackSummary(RunSummaryContextDto summaryContext) {
         List<String> sentences = new ArrayList<>();
+        RunMetadataDto runMetadata = summaryContext.getRunMetadata();
 
         sentences.add(String.format(
                 "Run %d for %s finished with %d passed, %d failed, and %d skipped tests out of %d total.",
@@ -142,6 +145,10 @@ public class RunSummaryContextServiceImpl implements RunSummaryContextService {
                 summaryContext.getTotalSkipped(),
                 summaryContext.getTotalTests()
         ));
+
+        if (runMetadata != null && runMetadata.getProfileName() != null && !runMetadata.getProfileName().isBlank()) {
+            sentences.add("This run used the " + runMetadata.getProfileName() + " profile.");
+        }
 
         if (summaryContext.getPreviousRunId() != null) {
             sentences.add(String.format(
@@ -200,6 +207,20 @@ public class RunSummaryContextServiceImpl implements RunSummaryContextService {
         }
 
         return String.join(" ", sentences);
+    }
+
+    private RunMetadataDto mapRunMetadata(TestRun run) {
+        return RunMetadataDto.builder()
+                .browserName(run.getBrowserName())
+                .browserVersion(run.getBrowserVersion())
+                .environmentName(run.getEnvironmentName())
+                .profileName(run.getProfileName())
+                .buildNumber(run.getBuildNumber())
+                .branchName(run.getBranchName())
+                .commitSha(run.getCommitSha())
+                .suiteDurationSeconds(run.getSuiteDurationSeconds())
+                .runTags(new ArrayList<>(run.getRunTags()))
+                .build();
     }
 
     private TestRun findPreviousRun(Long runId) {

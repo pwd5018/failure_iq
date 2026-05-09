@@ -15,6 +15,15 @@ public class FailureIqRunReport {
     private int totalFailed;
     private int totalSkipped;
     private double totalDurationSeconds;
+    private String browserName;
+    private String browserVersion;
+    private String environmentName;
+    private String profileName;
+    private String buildNumber;
+    private String branchName;
+    private String commitSha;
+    private double suiteDurationSeconds;
+    private List<String> runTags = new ArrayList<>();
     private List<TestCaseReportEntry> testCaseResults = new ArrayList<>();
 
     public String getRunName() {
@@ -87,6 +96,78 @@ public class FailureIqRunReport {
 
     public void setTotalDurationSeconds(double totalDurationSeconds) {
         this.totalDurationSeconds = totalDurationSeconds;
+    }
+
+    public String getBrowserName() {
+        return browserName;
+    }
+
+    public void setBrowserName(String browserName) {
+        this.browserName = browserName;
+    }
+
+    public String getBrowserVersion() {
+        return browserVersion;
+    }
+
+    public void setBrowserVersion(String browserVersion) {
+        this.browserVersion = browserVersion;
+    }
+
+    public String getEnvironmentName() {
+        return environmentName;
+    }
+
+    public void setEnvironmentName(String environmentName) {
+        this.environmentName = environmentName;
+    }
+
+    public String getProfileName() {
+        return profileName;
+    }
+
+    public void setProfileName(String profileName) {
+        this.profileName = profileName;
+    }
+
+    public String getBuildNumber() {
+        return buildNumber;
+    }
+
+    public void setBuildNumber(String buildNumber) {
+        this.buildNumber = buildNumber;
+    }
+
+    public String getBranchName() {
+        return branchName;
+    }
+
+    public void setBranchName(String branchName) {
+        this.branchName = branchName;
+    }
+
+    public String getCommitSha() {
+        return commitSha;
+    }
+
+    public void setCommitSha(String commitSha) {
+        this.commitSha = commitSha;
+    }
+
+    public double getSuiteDurationSeconds() {
+        return suiteDurationSeconds;
+    }
+
+    public void setSuiteDurationSeconds(double suiteDurationSeconds) {
+        this.suiteDurationSeconds = suiteDurationSeconds;
+    }
+
+    public List<String> getRunTags() {
+        return runTags;
+    }
+
+    public void setRunTags(List<String> runTags) {
+        this.runTags = runTags;
     }
 
     public List<TestCaseReportEntry> getTestCaseResults() {
