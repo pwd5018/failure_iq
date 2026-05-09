@@ -35,6 +35,11 @@ export function getLatestRunDiff() {
   return fetchJson('/dashboard/run-diff/latest');
 }
 
+export function getRunDiff(runAId, runBId) {
+  const params = new URLSearchParams({ runA: String(runAId), runB: String(runBId) });
+  return fetchJson(`/dashboard/run-diff?${params.toString()}`);
+}
+
 export function getFlakyTests() {
   return fetchJson('/tests/flaky');
 }

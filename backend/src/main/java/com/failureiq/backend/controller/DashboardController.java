@@ -18,6 +18,7 @@ import com.failureiq.backend.service.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 // This controller returns summary data for a future dashboard UI.
@@ -56,6 +57,11 @@ public class DashboardController {
     @GetMapping("/run-diff/latest")
     public RunDiffResponseDto getLatestRunDiff() {
         return runDiffService.getLatestRunDiff();
+    }
+
+    @GetMapping("/run-diff")
+    public RunDiffResponseDto getRunDiff(@RequestParam Long runA, @RequestParam Long runB) {
+        return runDiffService.compareRuns(runA, runB);
     }
 
     @GetMapping("/latest-run-summary-context")

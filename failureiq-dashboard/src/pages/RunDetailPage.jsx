@@ -43,9 +43,42 @@ function RunDetailPage() {
     loadRun();
   }, [loadRun]);
 
+  const [sortField, setSortField] = useState('status');
+  const [sortDir, setSortDir] = useState('asc');
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDir('asc');
+    }
+  };
+
   const failedTests = useMemo(() => {
     return run?.testCaseResults.filter((test) => test.status === 'FAILED') || [];
   }, [run]);
+
+  const sortedResults = useMemo(() => {
+    if (!run) return [];
+    return [...run.testCaseResults].sort((a, b) => {
+      let aVal, bVal;
+      if (sortField === 'status') {
+        const order = { FAILED: 0, SKIPPED: 1, PASSED: 2 };
+        aVal = order[a.status] ?? 3;
+        bVal = order[b.status] ?? 3;
+      } else if (sortField === 'duration') {
+        aVal = a.durationSeconds ?? 0;
+        bVal = b.durationSeconds ?? 0;
+      } else {
+        aVal = (a.testName || '').toLowerCase();
+        bVal = (b.testName || '').toLowerCase();
+      }
+      if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [run, sortField, sortDir]);
 
   if (loading) {
     return <LoadingState message="Loading run details..." testId="run-detail-loading" />;
@@ -140,15 +173,21 @@ function RunDetailPage() {
           <table className="data-table" data-testid="run-results-table">
             <thead>
               <tr>
-                <th>Test Name</th>
-                <th>Status</th>
-                <th>Duration</th>
+                <th className="sortable-th" onClick={() => handleSort('name')}>
+                  Test Name <span className="sort-arrow">{sortField === 'name' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅'}</span>
+                </th>
+                <th className="sortable-th" onClick={() => handleSort('status')}>
+                  Status <span className="sort-arrow">{sortField === 'status' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅'}</span>
+                </th>
+                <th className="sortable-th" onClick={() => handleSort('duration')}>
+                  Duration <span className="sort-arrow">{sortField === 'duration' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅'}</span>
+                </th>
                 <th>Error Message</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {run.testCaseResults.map((test) => {
+              {sortedResults.map((test) => {
                 const testIdentity = buildTestIdentity(test);
 
                 return (

@@ -1,4 +1,5 @@
 import ScreenshotQuickViewButton from './ScreenshotQuickViewButton';
+import StackTraceToggle from './StackTraceToggle';
 import StatusBadge from './StatusBadge';
 
 function FailedTestsList({ failedTests }) {
@@ -22,6 +23,7 @@ function FailedTestsList({ failedTests }) {
               <StatusBadge status={test.status} />
             </div>
             <pre className="failure-message">{test.errorMessage}</pre>
+            <StackTraceToggle stackTrace={test.stackTrace} />
             <ScreenshotQuickViewButton
               testResultId={test.id}
               buttonLabel="View Screenshot"

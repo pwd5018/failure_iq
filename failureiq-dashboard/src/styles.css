@@ -1009,6 +1009,208 @@ a {
   font-size: 0.88rem;
 }
 
+/* ── Stack trace toggle ─────────────────────────────────────── */
+.stack-trace-wrapper {
+  margin-top: 10px;
+}
+
+.stack-trace-toggle {
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.stack-trace-toggle:hover {
+  background: #f1f5f9;
+}
+
+.stack-trace-block {
+  margin: 10px 0 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: Consolas, monospace;
+  font-size: 0.8rem;
+  color: #7f1d1d;
+  background: #fff5f5;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px 14px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* ── Confidence progress bar ────────────────────────────────── */
+.confidence-bar-wrap {
+  position: relative;
+  height: 18px;
+  width: 160px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.confidence-bar {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.confidence-bar.confidence-high {
+  background: linear-gradient(90deg, #16a34a, #4ade80);
+}
+
+.confidence-bar.confidence-mid {
+  background: linear-gradient(90deg, #d97706, #fbbf24);
+}
+
+.confidence-bar.confidence-low {
+  background: linear-gradient(90deg, #dc2626, #f87171);
+}
+
+.confidence-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+
+/* ── Pagination controls ────────────────────────────────────── */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 0 4px;
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #eff6ff;
+}
+
+.pagination-btn:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.pagination-label {
+  font-size: 0.88rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.pagination-count {
+  font-weight: 400;
+  color: #94a3b8;
+}
+
+/* ── Sortable table headers ─────────────────────────────────── */
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.sortable-th:hover {
+  background: #f1f5f9;
+}
+
+.sort-arrow {
+  margin-left: 5px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* ── Trend chart window selector ────────────────────────────── */
+.chart-window-selector {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.window-btn {
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.window-btn:hover {
+  background: #f1f5f9;
+}
+
+.window-btn.active {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* ── Dashboard metric card links ────────────────────────────── */
+.metric-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  border-radius: 20px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.metric-card-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.14);
+}
+
+/* ── Run selector panel (RunDiffPage) ───────────────────────── */
+.run-selector-panel {
+  padding: 20px 24px;
+}
+
+.run-selector-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.run-selector-row .compact-field {
+  flex: 1;
+  min-width: 220px;
+}
+
+.run-selector-vs {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #64748b;
+  padding-bottom: 10px;
+  flex-shrink: 0;
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);

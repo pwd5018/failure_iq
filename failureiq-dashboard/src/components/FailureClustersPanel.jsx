@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import ScreenshotQuickViewButton from './ScreenshotQuickViewButton';
+import StackTraceToggle from './StackTraceToggle';
 
 function FailureClustersPanel({ clusterResponse }) {
   const clusters = clusterResponse?.clusters || [];
@@ -63,9 +64,13 @@ function FailureClustersPanel({ clusterResponse }) {
 
                 <div className="cluster-meta">
                   <span className="cluster-pill">{cluster.strengthIndicator} strength</span>
-                  <span className="cluster-pill">
-                    Confidence {Math.round(cluster.confidenceScore * 100)}%
-                  </span>
+                  <div className="confidence-bar-wrap" title={`Confidence: ${Math.round(cluster.confidenceScore * 100)}%`}>
+                    <div
+                      className={`confidence-bar ${cluster.confidenceScore >= 0.8 ? 'confidence-high' : cluster.confidenceScore >= 0.5 ? 'confidence-mid' : 'confidence-low'}`}
+                      style={{ width: `${Math.round(cluster.confidenceScore * 100)}%` }}
+                    />
+                    <span className="confidence-label">{Math.round(cluster.confidenceScore * 100)}% confidence</span>
+                  </div>
                   {clusterResponse?.runId ? (
                     <Link
                       to={`/runs/${clusterResponse.runId}/clusters/${cluster.clusterId}`}
@@ -92,6 +97,7 @@ function FailureClustersPanel({ clusterResponse }) {
                           </div>
                         </div>
                         <pre className="failure-message">{member.errorMessage || 'No error message stored.'}</pre>
+                        <StackTraceToggle stackTrace={member.stackTrace} />
                         <div className="cluster-member-actions">
                           <Link
                             to={`/tests/history?testClassName=${encodeURIComponent(member.testClassName)}&testMethodName=${encodeURIComponent(member.testMethodName)}`}
