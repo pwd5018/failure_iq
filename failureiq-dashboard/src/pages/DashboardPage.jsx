@@ -22,7 +22,6 @@ import {
   getTestRuns,
 } from '../utils/api';
 import {
-  buildTrendRuns,
   enrichRun,
   formatDateTime,
   formatPercentage,
@@ -92,7 +91,7 @@ function DashboardPage() {
   }
 
   const recentRuns = runs.slice(0, 5);
-  const trendRuns = buildTrendRuns(trends.runTrends || []);
+  const trendRuns = trends.runTrends || [];
   const topFlakyTests = flakyTests.slice(0, 5);
   const topRecurringFailures = recurringFailures.slice(0, 5);
 
@@ -128,26 +127,32 @@ function DashboardPage() {
       />
 
       <div className="metrics-grid">
-        <SummaryCard
-          label="Total Test Runs"
-          value={summary.totalTestRuns}
-          helperText="Imported automation runs"
-          testId="summary-total-runs"
-        />
-        <SummaryCard
-          label="Total Passed Tests"
-          value={summary.passedTests}
-          helperText="Successful test executions"
-          tone="success"
-          testId="summary-passed-tests"
-        />
-        <SummaryCard
-          label="Total Failed Tests"
-          value={summary.failedTests}
-          helperText="Failures that need review"
-          tone="danger"
-          testId="summary-failed-tests"
-        />
+        <Link to="/runs" className="metric-card-link">
+          <SummaryCard
+            label="Total Test Runs"
+            value={summary.totalTestRuns}
+            helperText="Click to browse all runs"
+            testId="summary-total-runs"
+          />
+        </Link>
+        <Link to="/runs?status=passed" className="metric-card-link">
+          <SummaryCard
+            label="Total Passed Tests"
+            value={summary.passedTests}
+            helperText="Click to view passing runs"
+            tone="success"
+            testId="summary-passed-tests"
+          />
+        </Link>
+        <Link to="/runs?status=failed" className="metric-card-link">
+          <SummaryCard
+            label="Total Failed Tests"
+            value={summary.failedTests}
+            helperText="Click to view failing runs"
+            tone="danger"
+            testId="summary-failed-tests"
+          />
+        </Link>
       </div>
 
       <ComparisonSummary comparison={comparison} />

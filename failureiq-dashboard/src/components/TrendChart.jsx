@@ -1,9 +1,28 @@
+import { useState } from 'react';
+
+const WINDOWS = [
+  { label: '5', value: 5 },
+  { label: '8', value: 8 },
+  { label: '10', value: 10 },
+  { label: 'All', value: null },
+];
+
+function buildDisplayRuns(runs, limit) {
+  const sliced = limit ? runs.slice(-limit) : runs;
+  return sliced.map((run) => ({
+    ...run,
+    runName: run.runName.length > 18 ? `${run.runName.slice(0, 18)}...` : run.runName,
+  }));
+}
+
 function TrendChart({ runs }) {
+  const [windowSize, setWindowSize] = useState(8);
+
   if (!runs.length) {
     return null;
   }
 
-  const chartRuns = runs;
+  const chartRuns = buildDisplayRuns(runs, windowSize);
   const maxValue = Math.max(
     ...chartRuns.flatMap((run) => [run.passedCount, run.failedCount, run.skippedCount, 1])
   );
@@ -14,6 +33,18 @@ function TrendChart({ runs }) {
         <div>
           <h3>Pass/Fail Trend</h3>
           <p>Recent run history over time, using only the PostgreSQL data already stored in FailureIQ.</p>
+        </div>
+        <div className="chart-window-selector">
+          {WINDOWS.map((w) => (
+            <button
+              key={w.label}
+              type="button"
+              className={`window-btn${windowSize === w.value ? ' active' : ''}`}
+              onClick={() => setWindowSize(w.value)}
+            >
+              {w.label}
+            </button>
+          ))}
         </div>
       </div>
 
