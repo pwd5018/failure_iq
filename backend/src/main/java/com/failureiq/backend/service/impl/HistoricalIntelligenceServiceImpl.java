@@ -44,7 +44,7 @@ public class HistoricalIntelligenceServiceImpl implements HistoricalIntelligence
 
     @Override
     public DashboardTrendsResponseDto getDashboardTrends() {
-        List<TestRun> recentRuns = getLatestRuns(TREND_RUN_LIMIT);
+        List<TestRun> recentRuns = testRunRepository.findAllByOrderByCreatedAtDesc();
         List<TestRun> chartRuns = new ArrayList<>(recentRuns);
         chartRuns.sort(Comparator.comparing(TestRun::getCreatedAt));
 

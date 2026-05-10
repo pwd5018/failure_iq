@@ -50,7 +50,7 @@ function TrendChart({ runs }) {
 
       <div className="trend-chart-grid">
         {chartRuns.map((run) => (
-          <div key={run.id} className="trend-group" data-testid={`trend-group-${run.id}`}>
+          <div key={run.runId} className="trend-group" data-testid={`trend-group-${run.runId}`}>
             <div className="trend-bars">
               <div
                 className="trend-bar passed"

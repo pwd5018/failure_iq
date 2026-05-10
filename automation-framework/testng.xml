@@ -15,7 +15,7 @@
     -Dscenario.profile=ui-regression
 -->
 <suite name="FailureIQ Automation Suite" verbose="1">
-    <parameter name="scenario.profile" value="release-candidate"/>
+    <parameter name="scenario.profile" value="ui-regression"/>
 
     <listeners>
         <listener class-name="com.failureiq.automation.listeners.TestListener"/>
