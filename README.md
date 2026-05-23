@@ -1,143 +1,97 @@
-# FailureIQ Phase 1
+# FailureIQ
 
-FailureIQ is a beginner-friendly demo project for collecting, storing, and viewing automated test results.
+FailureIQ is a local-first QA intelligence demo for automated test results.
 
-In Phase 1, the goal is simple:
+It combines:
 
-- store fake Selenium/TestNG-style test runs in PostgreSQL
-- expose backend API endpoints with Spring Boot
-- generate sample JSON test result files
-- import those files into the backend
-- display the results in a React frontend dashboard
+- a Spring Boot backend with PostgreSQL
+- a React dashboard for investigation
+- a fake web app for Selenium/TestNG tests to exercise
+- a Selenium/TestNG automation framework that uploads results automatically after each run
+- rule-based analysis and optional AI-assisted summaries and triage guidance
 
-This is not a production system yet. It is a learning-friendly foundation for future work.
+The project is intentionally beginner-friendly. It is designed to show how a test reporting platform can evolve from simple run storage into a richer triage workflow.
 
----
+## What FailureIQ Does Today
 
-## What FailureIQ Is
+FailureIQ already supports:
 
-FailureIQ is a small test reporting app.
+- storing test runs and individual test case results
+- viewing recent runs and run detail pages
+- historical trends across runs
+- flaky test detection
+- recurring failure detection
+- run-to-run diff at the individual test level
+- rule-based failure clustering
+- per-test history across recent runs
+- screenshot quick view for failed tests
+- AI or deterministic run summaries
+- AI or deterministic triage assistant guidance
 
-It helps you:
-
-- store test runs
-- view summary metrics
-- inspect passed, failed, and skipped tests
-- review failure messages from fake automation runs
-
-Right now, it uses generated sample data to simulate real test automation output.
-
----
-
-## What Phase 1 Includes
-
-Phase 1 includes:
-
-- a PostgreSQL database running with Docker Compose
-- a Spring Boot backend
-- REST API endpoints for test runs and dashboard summary
-- a fake test result generator
-- a sample data importer
-- a React frontend dashboard
-- a test runs list page
-- a run detail page
-- loading and error states in the frontend
-- a simple pass/fail trend chart
-- highlighted failed tests for easy review
-
----
-
-## Project Structure
+## Repository Structure
 
 ```text
 test-automation-dashboard/
-├─ backend/
-│  ├─ pom.xml
-│  └─ src/
-│     └─ main/
-│        ├─ java/com/failureiq/backend/
-│        │  ├─ controller/
-│        │  ├─ dto/
-│        │  ├─ entity/
-│        │  ├─ enums/
-│        │  ├─ exception/
-│        │  ├─ repository/
-│        │  ├─ service/
-│        │  └─ FailureIqBackendApplication.java
-│        └─ resources/
-│           └─ application.properties
-├─ sample-data/
-│  ├─ run-001-nightly-smoke.json
-│  ├─ run-002-regression.json
-│  ├─ run-003-hotfix-validation.json
-│  ├─ run-004-cross-browser.json
-│  └─ run-005-release-candidate.json
-├─ scripts/
-│  ├─ generate-sample-data.ps1
-│  └─ import-sample-data.ps1
-├─ src/
-│  ├─ components/
-│  ├─ pages/
-│  ├─ utils/
-│  ├─ App.jsx
-│  ├─ main.jsx
-│  └─ styles.css
-├─ docker-compose.yml
-├─ package.json
-├─ vite.config.js
-└─ README.md
+|- backend/
+|  |- Spring Boot API, analysis services, AI summary and triage services
+|- failureiq-dashboard/
+|  |- React frontend for dashboard, runs, summaries, clusters, and triage
+|- fake-web-app/
+|  |- Local React app used as the Selenium/TestNG target application
+|- automation-framework/
+|  |- Selenium/TestNG suite with profile-driven failure patterns and auto-upload
+|- sample-data/
+|  |- Optional legacy sample JSON files
+|- scripts/
+|  |- Utility scripts for sample data generation and import
+|- docker-compose.yml
+|- package.json
+`- README.md
 ```
 
----
+## Main Apps And Ports
+
+- Backend API: [http://localhost:8080](http://localhost:8080)
+- FailureIQ dashboard: [http://localhost:5174](http://localhost:5174)
+- Fake web app: [http://localhost:5173](http://localhost:5173)
 
 ## Prerequisites
 
-Before running FailureIQ, make sure you have these installed:
+You should have these installed locally:
 
 - Docker Desktop
-- Node.js
-- IntelliJ IDEA or another Java 17 setup
+- Node.js and npm
 - Java 17
 - Maven
 
-This project was run on Windows with:
+This repo also includes root scripts that use the IntelliJ bundled JBR and Maven path used on this machine. If your local Java or Maven setup is different, adjust those commands as needed.
 
-- Docker Desktop for PostgreSQL
-- Node.js for the frontend
-- IntelliJ bundled JBR and bundled Maven for the backend
+## Quick Start
 
-If `java` or `mvn` are not available globally on your machine, you can still run the backend using the IntelliJ paths shown below.
+### 1. Install the frontend dependencies
 
----
+From the repo root:
 
-## How To Start PostgreSQL With Docker
+```powershell
+cd C:\Users\wolf-ai\Workspace\test-automation-dashboard
+& 'C:\Program Files\nodejs\npm.cmd' install
+& 'C:\Program Files\nodejs\npm.cmd' run install:frontends
+```
 
-Open PowerShell and run:
+### 2. Start PostgreSQL
 
 ```powershell
 cd C:\Users\wolf-ai\Workspace\test-automation-dashboard
 docker compose up -d
 ```
 
-This starts PostgreSQL in the background.
-
-To check if it is running:
-
-```powershell
-docker compose ps
-```
-
-To stop PostgreSQL later:
+To stop it later:
 
 ```powershell
 docker compose down
 ```
 
----
-
-## How To Run The Backend
-
-Open a PowerShell terminal and run:
+### 3. Start the backend
 
 ```powershell
 cd C:\Users\wolf-ai\Workspace\test-automation-dashboard\backend
@@ -146,300 +100,236 @@ $env:Path = "$env:JAVA_HOME\bin;$env:Path"
 & 'C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.3\plugins\maven\lib\maven3\bin\mvn.cmd' spring-boot:run
 ```
 
-The backend will start on:
-
-```text
-http://localhost:8080
-```
-
-You can test it in your browser or with PowerShell:
-
-```powershell
-Invoke-RestMethod http://localhost:8080/api/health
-```
-
-Expected response:
-
-```json
-{
-  "status": "UP",
-  "message": "FailureIQ backend is running"
-}
-```
-
----
-
-## How To Generate Sample Data
-
-The generator creates realistic fake Selenium/TestNG-style JSON files.
-
-Open PowerShell and run:
+You can also use the root shortcut:
 
 ```powershell
 cd C:\Users\wolf-ai\Workspace\test-automation-dashboard
-powershell -ExecutionPolicy Bypass -File .\scripts\generate-sample-data.ps1
+& 'C:\Program Files\nodejs\npm.cmd' run backend
 ```
 
-This writes JSON files into:
+### 4. Start the frontend apps
 
-```text
-sample-data/
-```
-
-Example file names:
-
-- `run-001-nightly-smoke.json`
-- `run-002-regression.json`
-- `run-003-hotfix-validation.json`
-- `run-004-cross-browser.json`
-- `run-005-release-candidate.json`
-
-These files include realistic failure types like:
-
-- `TimeoutException`
-- `NoSuchElementException`
-- `StaleElementReferenceException`
-- `AssertionError`
-- `ElementClickInterceptedException`
-
----
-
-## How To Import Sample Data
-
-Make sure the backend is already running on `localhost:8080`.
-
-Then open PowerShell and run:
+Run both frontend apps together:
 
 ```powershell
 cd C:\Users\wolf-ai\Workspace\test-automation-dashboard
-powershell -ExecutionPolicy Bypass -File .\scripts\import-sample-data.ps1
+& 'C:\Program Files\nodejs\npm.cmd' run frontend
 ```
 
-This reads the JSON files from `sample-data` and posts them to:
-
-```text
-POST /api/test-runs
-```
-
-After importing, you should have data available for the dashboard and test runs pages.
-
----
-
-## How To Run The Frontend
-
-Open a new PowerShell terminal and run:
+Or start them separately:
 
 ```powershell
-cd C:\Users\wolf-ai\Workspace\test-automation-dashboard
-& 'C:\Program Files\nodejs\npm.cmd' install
+cd C:\Users\wolf-ai\Workspace\test-automation-dashboard\fake-web-app
 & 'C:\Program Files\nodejs\npm.cmd' run dev
 ```
 
-The frontend will start on:
-
-```text
-http://localhost:5173
+```powershell
+cd C:\Users\wolf-ai\Workspace\test-automation-dashboard\failureiq-dashboard
+& 'C:\Program Files\nodejs\npm.cmd' run dev
 ```
 
-The Vite development server is configured to proxy API requests to the backend on `localhost:8080`.
+### 5. Run the Selenium/TestNG suite
 
----
-
-## How To Open The Dashboard
-
-Once everything is running:
-
-1. Start PostgreSQL with Docker
-2. Start the backend
-3. Generate sample data
-4. Import sample data
-5. Start the frontend
-
-Then open this URL in your browser:
-
-[http://localhost:5173](http://localhost:5173)
-
-Pages available in Phase 1:
-
-- `/dashboard`
-- `/runs`
-- `/runs/{id}`
-
-Main UI features:
-
-- summary cards
-- recent runs table
-- pass/fail trend chart
-- run list with filters
-- run detail page with highlighted failed tests
-
----
-
-## Recommended Run Order
-
-If you are starting from scratch, use this order:
-
-### 1. Start PostgreSQL
+The automation framework uploads results directly to FailureIQ after each run.
 
 ```powershell
-cd C:\Users\wolf-ai\Workspace\test-automation-dashboard
-docker compose up -d
-```
-
-### 2. Start the backend
-
-```powershell
-cd C:\Users\wolf-ai\Workspace\test-automation-dashboard\backend
+cd C:\Users\wolf-ai\Workspace\test-automation-dashboard\automation-framework
 $env:JAVA_HOME = 'C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.3\jbr'
 $env:Path = "$env:JAVA_HOME\bin;$env:Path"
-& 'C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.3\plugins\maven\lib\maven3\bin\mvn.cmd' spring-boot:run
+& 'C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.3\plugins\maven\lib\maven3\bin\mvn.cmd' test
 ```
 
-### 3. Generate sample files
+Once a run uploads successfully, open:
+
+- dashboard: [http://localhost:5174/dashboard](http://localhost:5174/dashboard)
+- runs list: [http://localhost:5174/runs](http://localhost:5174/runs)
+
+## Root Convenience Scripts
+
+From the repo root:
+
+- `npm run db:start` starts PostgreSQL
+- `npm run db:stop` stops PostgreSQL
+- `npm run backend` starts the Spring Boot API
+- `npm run frontend` starts both Vite frontends
+- `npm run all` starts the backend and both frontends together
+
+## Automation Profiles
+
+The Selenium/TestNG suite includes repeatable profile-driven failure patterns so you can generate different FailureIQ dashboards and histories.
+
+Current supported profiles:
+
+- `release-candidate`
+- `timing-stress`
+- `ui-regression`
+
+The default profile is set in:
+
+`automation-framework/src/test/resources/config.properties`
+
+You can also change the profile in:
+
+`automation-framework/testng.xml`
+
+Or override it from Maven:
 
 ```powershell
-cd C:\Users\wolf-ai\Workspace\test-automation-dashboard
-powershell -ExecutionPolicy Bypass -File .\scripts\generate-sample-data.ps1
+& 'C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.3\plugins\maven\lib\maven3\bin\mvn.cmd' -Dscenario.profile=timing-stress test
 ```
 
-### 4. Import sample files
+## Current Investigation Features
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\import-sample-data.ps1
-```
+### Dashboard and run analysis
 
-### 5. Start the frontend
+- summary metrics
+- trend charts
+- run comparison summary
+- latest run diff
+- latest run summary
+- latest run AI triage preview
 
-```powershell
-& 'C:\Program Files\nodejs\npm.cmd' run dev
-```
+### Run detail workflow
 
-### 6. Open the app
+- failed tests section
+- screenshot quick view
+- failure clusters
+- cluster-to-history drilldown
+- per-test history links
+- executive and triage summaries
+- AI triage assistant panel
 
-[http://localhost:5173](http://localhost:5173)
+### Historical intelligence
 
----
+- flaky score tracking
+- recurring failures
+- per-test result history
+- cluster history
+- run-to-run diff buckets such as newly failing, fixed, still failing, added, and removed
 
-## Common Troubleshooting Tips For Windows
+## AI Support
 
-### Docker command does not work
+FailureIQ can run entirely without AI.
 
-If `docker` is not recognized:
+If AI is disabled or unavailable, the backend still returns deterministic fallback summaries and triage guidance.
 
-- make sure Docker Desktop is installed
-- start Docker Desktop manually
-- wait until Docker is fully running
-- open a new PowerShell window and try again
+Supported provider modes:
 
-### PowerShell says script execution is disabled
+- `fallback`
+- `ollama`
+- `groq`
+- `openai-compatible`
 
-If you see an error about execution policy, run the scripts like this:
+AI configuration lives in:
 
-```powershell
-powershell -ExecutionPolicy Bypass -File .\scripts\generate-sample-data.ps1
-powershell -ExecutionPolicy Bypass -File .\scripts\import-sample-data.ps1
-```
+`backend/src/main/resources/application.properties`
 
-### `npm` is not recognized
+There are also example profile-specific configs in:
 
-If `npm` is not on your PATH, use the full Node.js path:
+- `backend/src/main/resources/application-ollama.properties`
+- `backend/src/main/resources/application-groq.properties`
+- `backend/src/main/resources/application-openai-compatible.properties`
 
-```powershell
-& 'C:\Program Files\nodejs\npm.cmd' install
-& 'C:\Program Files\nodejs\npm.cmd' run dev
-```
+Recommended configuration pattern:
 
-### `java` is not recognized
+- keep `failureiq.ai.enabled=false` if you only want deterministic summaries
+- use `provider=ollama` for local models
+- use `provider=groq` or `provider=openai-compatible` for hosted providers
+- prefer environment variables or local overrides for API keys instead of committing secrets
 
-If Java is not installed globally, use the IntelliJ bundled Java runtime:
+## API Overview
 
-```powershell
-$env:JAVA_HOME = 'C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.3\jbr'
-$env:Path = "$env:JAVA_HOME\bin;$env:Path"
-```
+FailureIQ exposes APIs for:
 
-### `mvn` is not recognized
+- health checks
+- test run ingestion
+- dashboard summaries and trends
+- flaky test and recurring failure analysis
+- run diff
+- failure clustering
+- per-test history
+- screenshot metadata and image serving
+- AI summaries
+- AI triage assistant results
 
-If Maven is not installed globally, use IntelliJ’s bundled Maven:
-
-```powershell
-& 'C:\Program Files\JetBrains\IntelliJ IDEA 2025.3.3\plugins\maven\lib\maven3\bin\mvn.cmd' spring-boot:run
-```
-
-### Backend cannot connect to PostgreSQL
-
-Check these:
-
-- Docker Desktop is running
-- `docker compose up -d` completed successfully
-- port `5432` is not already being used by another PostgreSQL instance
-- backend `application.properties` matches the Docker database settings
-
-Current database settings are:
-
-- database: `failureiq`
-- username: `failureiq_user`
-- password: `failureiq_password`
-
-### Frontend shows loading or API errors
-
-Check these:
-
-- backend is running on `http://localhost:8080`
-- frontend is running on `http://localhost:5173`
-- sample data has been imported
-- you started the frontend with `npm run dev`, not just a static file server
-
-### Port already in use
-
-If port `8080`, `5173`, or `5432` is already in use:
-
-- stop the conflicting app
-- or change the port in the related config file
-
----
-
-## API Endpoints In Phase 1
-
-Backend endpoints available now:
+Helpful endpoints to check manually:
 
 - `GET /api/health`
-- `POST /api/test-runs`
 - `GET /api/test-runs`
 - `GET /api/test-runs/{id}`
+- `GET /api/test-runs/{id}/summary`
+- `POST /api/test-runs/{id}/summary/regenerate`
+- `GET /api/test-runs/{id}/triage-assistant`
+- `POST /api/test-runs/{id}/triage-assistant/regenerate`
 - `GET /api/dashboard/summary`
+- `GET /api/dashboard/latest-run-summary`
+- `GET /api/dashboard/latest-run-summary-context`
 
----
+## Optional Sample Data
 
-## What Is Not Included Yet
+The older sample-data flow is still in the repo for local experiments, but it is no longer the main path for populating FailureIQ.
 
-Phase 1 does not include:
+The primary flow now is:
 
-- authentication or user accounts
-- AI features
-- failure clustering
-- root cause analysis
-- Selenium test execution
-- TestNG execution
-- CI/CD integration
-- file upload UI
-- charts from a charting library
-- advanced filtering or search
-- editing or deleting test runs
-- production deployment setup
-- security hardening
-- automated tests for the app itself
+1. start the fake web app
+2. run the Selenium/TestNG suite
+3. let the framework upload the run automatically
 
----
+The legacy sample-data files and scripts are still useful if you want quick seeded data without running the browser tests.
 
-## Summary
+## Common Troubleshooting
 
-FailureIQ Phase 1 is a simple full-stack demo that lets you:
+### The dashboard loads but no runs appear
 
-- run PostgreSQL with Docker
-- run a Spring Boot backend
-- generate fake test result JSON
-- import that data into PostgreSQL
-- view the results in a React dashboard
+Check that:
 
-It is a solid starting point for future phases.
+- PostgreSQL is running
+- the backend is running on `localhost:8080`
+- the automation framework completed a run
+- `upload.enabled=true` in the automation config
+
+### The automation run finishes but nothing appears in FailureIQ
+
+Check:
+
+- `automation-framework/src/test/resources/config.properties`
+- `failureiq.api.url=http://localhost:8080/api/test-runs`
+- backend is running before the suite starts
+
+### Screenshots do not appear
+
+Check:
+
+- the failed test actually captured a screenshot
+- the screenshot file still exists locally under the automation output folder
+- you are viewing a fresh run generated on the current machine
+
+### AI always falls back
+
+Check:
+
+- `failureiq.ai.enabled`
+- `failureiq.ai.provider`
+- `failureiq.ai.model`
+- `failureiq.ai.base-url` or `failureiq.ai.endpoint`
+- API key or local provider availability
+
+For Ollama specifically, make sure the local server is running and the configured model is installed.
+
+## Development Notes
+
+- This repo is local-development focused.
+- Authentication is intentionally not part of the current app.
+- Most fields added in recent phases are backward compatible, so older runs without newer metadata should still load correctly.
+- The root `src/` folder is a leftover earlier frontend artifact. The active apps today are `failureiq-dashboard/` and `fake-web-app/`.
+
+## Current Status
+
+FailureIQ is no longer just a Phase 1 demo. It is now a multi-part local platform for:
+
+- generating realistic automated test results
+- storing and comparing run history
+- clustering failures and tracking flaky behavior
+- previewing failure screenshots
+- summarizing runs with deterministic or AI-backed summaries
+- guiding investigation with a run-scoped AI triage assistant
